@@ -63,6 +63,45 @@ body {
     cursor: pointer;
     font-weight: 500;
 }
+.gestion-selector {
+    position: absolute;
+    top: 18px;
+    left: 32px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.gestion-selector label {
+    font-size: 0.95rem;
+    font-weight: 500;
+}
+.gestion-selector select {
+    padding: 8px 12px;
+    border-radius: var(--border-radius);
+    border: none;
+    font-size: 0.95em;
+    cursor: pointer;
+    background: var(--color-white);
+    color: var(--color-text-dark);
+}
+.gestion-selector #btn-nueva-gestion {
+    background: var(--color-success);
+    color: var(--color-white);
+    border: none;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    font-size: 1.3em;
+    font-weight: bold;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background var(--transition-fast);
+}
+.gestion-selector #btn-nueva-gestion:hover {
+    background: var(--color-success-hover);
+}
 .gestor-main {
     flex: 1;
     display: flex;
@@ -236,6 +275,26 @@ body {
   z-index: 2000;
 }
 
+#modal-cuenta {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: rgba(40, 60, 80, 0.6);
+  z-index: 2000;
+}
+
+#modal-cuenta .modal-content {
+  background: var(--color-white);
+  border-radius: var(--border-radius-lg);
+  padding: 32px 28px 22px 28px;
+  box-shadow: 0 8px 32px rgba(44, 62, 80, 0.18);
+  min-width: 340px;
+  max-width: 520px;
+  text-align: left;
+}
+
 .modal-advertencia-content {
   max-width: 400px !important;
   min-width: 350px !important;
@@ -243,6 +302,95 @@ body {
   padding: 30px 25px 20px 25px !important;
   background: var(--color-white) !important;
   border-radius: var(--border-radius-lg);
+}
+
+#modal-gestion {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: rgba(40, 60, 80, 0.6);
+  z-index: 2000;
+}
+
+#modal-gestion .modal-content {
+  background: var(--color-white);
+  border-radius: var(--border-radius-lg);
+  padding: 32px 28px 22px 28px;
+  box-shadow: 0 8px 32px rgba(44, 62, 80, 0.18);
+  min-width: 340px;
+  max-width: 420px;
+  text-align: left;
+}
+
+#modal-gestion h2 {
+  margin-top: 0;
+  margin-bottom: 18px;
+  font-size: 1.5em;
+  color: var(--color-primary);
+}
+
+#modal-gestion .form-group {
+  margin-bottom: 18px;
+}
+
+#modal-gestion label {
+  font-weight: 600;
+  color: var(--color-text-dark);
+  margin-bottom: 6px;
+  display: block;
+}
+
+#modal-gestion input[type="number"],
+#modal-gestion input[type="text"] {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid #bfcad6;
+  border-radius: 6px;
+  font-size: 1em;
+  margin-bottom: 6px;
+  box-sizing: border-box;
+  transition: border-color 0.2s;
+}
+
+#modal-gestion .modal-actions {
+  display: flex;
+  gap: 16px;
+  margin-top: 18px;
+  justify-content: flex-end;
+}
+
+#modal-gestion button[type="submit"] {
+  background: var(--color-success);
+  color: var(--color-white);
+  border: none;
+  padding: 8px 18px;
+  border-radius: var(--border-radius);
+  font-size: 1em;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background var(--transition-fast);
+}
+
+#modal-gestion button[type="submit"]:hover {
+  background: var(--color-success-hover);
+}
+
+#btn-cancelar-gestion {
+  background: var(--color-secondary);
+  color: var(--color-white);
+  border: none;
+  padding: 8px 18px;
+  border-radius: var(--border-radius);
+  font-size: 1em;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background var(--transition-fast);
+}
+
+#btn-cancelar-gestion:hover {
+  background: #7f8c8d;
 }
 
 .advertencia-icon {

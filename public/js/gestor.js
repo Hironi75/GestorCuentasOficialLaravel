@@ -39,7 +39,23 @@ window.addEventListener('DOMContentLoaded', function() {
         filtroCampo: document.getElementById('filtro-campo'),
         filtroCuentas: document.getElementById('filtro-cuentas'),
         filtroDias: document.getElementById('filtro-dias'),
-        btnGuardar: document.querySelector('#form-crud button[type="submit"]')
+        btnGuardar: document.querySelector('#form-crud button[type="submit"]'),
+        // Elementos de gestión
+        selectGestion: document.getElementById('select-gestion'),
+        btnNuevaGestion: document.getElementById('btn-nueva-gestion'),
+        modalGestion: document.getElementById('modal-gestion'),
+        formGestion: document.getElementById('form-gestion'),
+        btnCancelarGestion: document.getElementById('btn-cancelar-gestion'),
+        gestionActualLabel: document.getElementById('gestion-actual-label'),
+        // Elementos de modal de cuenta y gestiones
+        linkCuenta: document.getElementById('link-cuenta'),
+        modalCuenta: document.getElementById('modal-cuenta'),
+        btnCerrarCuenta: document.getElementById('btn-cerrar-cuenta'),
+        gestionesBody: document.getElementById('gestiones-body'),
+        formEditarGestion: document.getElementById('form-editar-gestion'),
+        editarGestionAnio: document.getElementById('editar-gestion-anio'),
+        modalEditarGestion: document.getElementById('modal-editar-gestion'),
+        btnCancelarEditarGestion: document.getElementById('btn-cancelar-editar-gestion')
     };
 
     let modoEdicion = false;
@@ -48,6 +64,8 @@ window.addEventListener('DOMContentLoaded', function() {
     let mostrandoDeudores = false; // Estado del filtro deudores
     let idClienteEliminar = null; // ID del cliente a eliminar
     let datosOriginales = {}; // Datos originales para comparar cambios
+    let gestionActual = null; // Gestión actualmente seleccionada
+    let gestionEditId = null; // ID de la gestión en edición
 
     // ==================== UTILIDADES ====================
     const getCSRFToken = () => document.querySelector('meta[name="csrf-token"]').getAttribute('content');
@@ -312,9 +330,40 @@ window.addEventListener('DOMContentLoaded', function() {
         renderizarClientes(deudores);
     }
 
+    // ==================== GESTIONES ====================
+    function cargarGestiones() {
+        apiRequest('/api/gestiones')
+            .then(res => res.json())
+            .then(gestiones => {
+                elementos.selectGestion.innerHTML = '';
+                gestiones.forEach(g => {
+                    const option = document.createElement('option');
+                    option.value = g.id;
+                    option.textContent = g.nombre || `Gestión ${g.anio}`;
+                    if (g.activa) {
+                        option.selected = true;
+                        gestionActual = g.id;
+                    }
+                    elementos.selectGestion.appendChild(option);
+                });
+                actualizarLabelGestion();
+                cargarClientes();
+            });
+    }
+
+    function actualizarLabelGestion() {
+        const selectedOption = elementos.selectGestion.options[elementos.selectGestion.selectedIndex];
+        if (selectedOption && elementos.gestionActualLabel) {
+            elementos.gestionActualLabel.textContent = `(${selectedOption.textContent})`;
+        }
+    }
+
     // ==================== CARGAR CLIENTES ====================
     function cargarClientes() {
-        apiRequest('/api/clientes')
+        const gestionId = elementos.selectGestion.value || gestionActual;
+        const url = gestionId ? `/api/clientes?gestion_id=${gestionId}` : '/api/clientes';
+        
+        apiRequest(url)
             .then(res => res.json())
             .then(clientes => {
                 clientesData = clientes; // Guardar para filtrado
@@ -325,7 +374,68 @@ window.addEventListener('DOMContentLoaded', function() {
                 }
             });
     }
-    cargarClientes();
+    
+    // Cargar gestiones primero (esto cargará clientes después)
+    cargarGestiones();
+    
+    // Event listener para cambio de gestión
+    if (elementos.selectGestion) {
+        elementos.selectGestion.addEventListener('change', () => {
+            gestionActual = elementos.selectGestion.value;
+            actualizarLabelGestion();
+            // Resetear filtros
+            mostrandoDeudores = false;
+            elementos.btnDeudores.textContent = 'Deudores';
+            elementos.filtroCuentas.value = '';
+            elementos.filtroDias.value = 'todos';
+            cargarClientes();
+        });
+    }
+
+        // Refuerzo: los filtros siempre operan sobre clientesData, que solo contiene los clientes de la gestión seleccionada
+        // No se mezclan datos de gestiones diferentes
+
+    // Event listener para nueva gestión
+    if (elementos.btnNuevaGestion) {
+        elementos.btnNuevaGestion.addEventListener('click', () => {
+            document.getElementById('gestion-anio').value = new Date().getFullYear();
+            document.getElementById('gestion-nombre').value = '';
+            elementos.modalGestion.style.display = 'flex';
+        });
+    }
+
+    if (elementos.btnCancelarGestion) {
+        elementos.btnCancelarGestion.addEventListener('click', () => {
+            elementos.modalGestion.style.display = 'none';
+        });
+    }
+
+    if (elementos.formGestion) {
+        elementos.formGestion.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const anio = document.getElementById('gestion-anio').value;
+            const nombre = document.getElementById('gestion-nombre').value || `Gestión ${anio}`;
+            
+            apiRequest('/api/gestiones', {
+                method: 'POST',
+                body: JSON.stringify({ anio, nombre })
+            })
+            .then(res => {
+                return res.json().then(data => ({ ok: res.ok, data }));
+            })
+            .then(({ ok, data }) => {
+                if (!ok || data.error) {
+                    mostrarAdvertencia(data.error || 'Error al crear la gestión');
+                } else {
+                    elementos.modalGestion.style.display = 'none';
+                    cargarGestiones();
+                }
+            })
+            .catch(err => {
+                mostrarAdvertencia('Error al crear la gestión');
+            });
+        });
+    }
     
     // Event listeners para filtros
     if (elementos.filtroCampo) {
@@ -421,6 +531,11 @@ window.addEventListener('DOMContentLoaded', function() {
                 AbonoDeuda: getElementValue('crud-AbonoDeuda') || 0,
                 TotalPagar: getElementValue('crud-TotalPagar')
             };
+
+                // Asignar gestion_id seleccionado
+                if (elementos.selectGestion && elementos.selectGestion.value) {
+                    data.gestion_id = elementos.selectGestion.value;
+                }
             
             // Meses y conceptos
             MESES.forEach(mes => {
@@ -649,4 +764,96 @@ window.addEventListener('DOMContentLoaded', function() {
     if (elementos.btnCancelarEliminar) {
         elementos.btnCancelarEliminar.addEventListener('click', cerrarModalConfirmar);
     }
+
+    // ==================== MODAL CUENTA (GESTIONES) ====================
+    const linkCuenta = document.getElementById('link-cuenta');
+    const modalCuenta = document.getElementById('modal-cuenta');
+    const btnCerrarCuenta = document.getElementById('btn-cerrar-cuenta');
+    const gestionesBody = document.getElementById('gestiones-body');
+
+    function renderizarGestiones(gestiones) {
+        gestionesBody.innerHTML = '';
+        gestiones.forEach(g => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${g.anio}</td>
+                <td>${g.activa ? '✅' : ''}</td>
+                <td>
+                    <button class="btn-editar-gestion" data-id="${g.id}" style="background:#f39c12;color:#fff;border:none;padding:4px 10px;border-radius:4px;">Editar</button>
+                    <button class="btn-eliminar-gestion" data-id="${g.id}" style="background:#e74c3c;color:#fff;border:none;padding:4px 10px;border-radius:4px;">Eliminar</button>
+                </td>
+            `;
+            gestionesBody.appendChild(tr);
+        });
+    }
+
+    function cargarGestionesTabla() {
+        fetch('/api/gestiones')
+            .then(res => res.json())
+            .then(gestiones => {
+                renderizarGestiones(gestiones);
+            });
+    }
+
+    if (linkCuenta) {
+        linkCuenta.addEventListener('click', function(e) {
+            e.preventDefault();
+            modalCuenta.style.display = 'flex';
+            cargarGestionesTabla();
+        });
+    }
+    if (btnCerrarCuenta) {
+        btnCerrarCuenta.addEventListener('click', function() {
+            modalCuenta.style.display = 'none';
+        });
+    }
+
+    // Editar y eliminar gestiones
+    gestionesBody.addEventListener('click', function(e) {
+        const btn = e.target.closest('button');
+        if (!btn) return;
+        const id = btn.dataset.id;
+        if (btn.classList.contains('btn-editar-gestion')) {
+            gestionEditId = id;
+            fetch('/api/gestiones')
+                .then(res => res.json())
+                .then(gestiones => {
+                    const gestion = gestiones.find(g => g.id == id);
+                    if (gestion) {
+                        document.getElementById('editar-gestion-anio').value = gestion.anio;
+                        document.getElementById('modal-editar-gestion').style.display = 'flex';
+                    }
+                });
+        }
+        if (btn.classList.contains('btn-eliminar-gestion')) {
+            if (confirm('¿Seguro que deseas eliminar esta gestión?')) {
+                fetch(`/api/gestiones/${id}`, { method: 'DELETE' })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success) {
+                            cargarGestionesTabla();
+                        } else {
+                            alert(data.message || 'No se pudo eliminar la gestión');
+                        }
+                    });
+            }
+        }
+    });
+    document.getElementById('form-editar-gestion').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const anio = document.getElementById('editar-gestion-anio').value;
+        fetch(`/api/gestiones/${gestionEditId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ anio })
+        })
+        .then(res => res.json())
+        .then(data => {
+            document.getElementById('modal-editar-gestion').style.display = 'none';
+            cargarGestionesTabla();
+        });
+    });
+    document.getElementById('btn-cancelar-editar-gestion').addEventListener('click', function() {
+        document.getElementById('modal-editar-gestion').style.display = 'none';
+    });
 });

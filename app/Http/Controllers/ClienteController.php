@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Cliente;
+use App\Models\Gestion;
 use Illuminate\Http\Request;
 
 class ClienteController extends Controller
@@ -17,6 +18,7 @@ class ClienteController extends Controller
     private function getValidationRules($isUpdate = false)
     {
         $rules = [
+            'gestion_id' => 'nullable|exists:gestiones,id',
             'Correo_Electronico' => 'required|string',
             'Password' => 'required|string',
             'nombre' => 'required|string',
@@ -45,10 +47,22 @@ class ClienteController extends Controller
         }
     }
 
-    // Obtener todos los clientes en formato JSON
+    // Obtener todos los clientes en formato JSON (filtrado por gestión)
     public function index(Request $request)
     {
         if ($request->wantsJson()) {
+            $gestionId = $request->query('gestion_id');
+            
+            if ($gestionId) {
+                return Cliente::where('gestion_id', $gestionId)->get();
+            }
+            
+            // Si no se especifica gestión, usar la activa
+            $gestionActiva = Gestion::activa();
+            if ($gestionActiva) {
+                return Cliente::where('gestion_id', $gestionActiva->id)->get();
+            }
+            
             return Cliente::all();
         }
         return view('gestor.index');
@@ -58,6 +72,12 @@ class ClienteController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate($this->getValidationRules());
+        
+        // Asignar gestión activa si no se especifica
+        if (!isset($validated['gestion_id']) || !$validated['gestion_id']) {
+            $gestionActiva = Gestion::activa();
+            $validated['gestion_id'] = $gestionActiva ? $gestionActiva->id : null;
+        }
         
         $cliente = new Cliente($validated);
         $this->asignarMeses($cliente, $request);

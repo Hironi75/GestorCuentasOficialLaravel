@@ -14,13 +14,18 @@
     <div class="gestor-main-container">
         <header class="gestor-header">
             <h1>Gestor de Cuentas</h1>
-            <div class="subtitle">Cuenta &nbsp;|&nbsp; Gestor</div>
+                <div class="subtitle"><a href="#" id="link-cuenta" style="color:#27ae60;text-decoration:underline;cursor:pointer;">Cuenta</a> &nbsp;|&nbsp; Gestor</div>
+            <div class="gestion-selector">
+                <label>Gestión:</label>
+                <select id="select-gestion"></select>
+                <button id="btn-nueva-gestion" title="Nueva Gestión">+</button>
+            </div>
             <button onclick="window.location.href='/'" class="logout-btn">Cerrar sesión</button>
         </header>
         <main class="gestor-main">
             <section class="gestor-section">
                 <div class="gestor-toolbar">
-                    <h2 style="margin:0; color:#2d3436; font-size:1.5rem;">Listado de Cuentas</h2>
+                    <h2 style="margin:0; color:#2d3436; font-size:1.5rem;">Listado de Cuentas <span id="gestion-actual-label" style="font-size:0.9rem; color:#7f8c8d;"></span></h2>
                     <div style="display:flex; gap:8px; align-items:center; min-width:420px; width:100%;">
                         <select id="filtro-campo">
                             <option value="id">ID</option>
@@ -217,6 +222,47 @@
                     </form>
                 </div>
             </div>
+    </div>
+    
+    <!-- Modal Nueva Gestión -->
+    <div id="modal-gestion" class="modal" style="display:none;">
+        <div class="modal-content" style="max-width:400px;">
+            <h2>Nueva Gestión</h2>
+            <form id="form-gestion">
+                <div class="form-group">
+                    <label>Año</label>
+                    <input type="number" id="gestion-anio" required min="2000" max="2099">
+                </div>
+                <div class="form-group">
+                    <label>Nombre (opcional)</label>
+                    <input type="text" id="gestion-nombre" placeholder="Ej: Gestión 2026">
+                </div>
+                <div class="modal-actions">
+                    <button type="submit">Crear Gestión</button>
+                    <button type="button" id="btn-cancelar-gestion">Cancelar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Cuenta (Gestiones) -->
+    <div id="modal-cuenta" class="modal" style="display:none;">
+        <div class="modal-content" style="max-width:500px;">
+            <h2>Gestión de Cuentas</h2>
+            <table id="tabla-gestiones" class="gestor-table" style="margin-bottom:18px;">
+                <thead>
+                    <tr>
+                        <th>Año</th>
+                        <th>Activa</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="gestiones-body">
+                    <!-- Filas dinámicas -->
+                </tbody>
+            </table>
+            <button id="btn-cerrar-cuenta" style="background:#27ae60;color:#fff;padding:8px 18px;border:none;border-radius:6px;">Cerrar</button>
+        </div>
     </div>
     </main>
     </div>
