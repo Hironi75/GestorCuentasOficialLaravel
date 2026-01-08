@@ -274,6 +274,40 @@ if (document.getElementById('btn-deseleccionar-todos-campos')) {
     });
 }
 
+// Seleccionar/Deseleccionar solo meses
+if (document.getElementById('btn-seleccionar-meses')) {
+    document.getElementById('btn-seleccionar-meses').addEventListener('click', function() {
+        document.querySelectorAll('.campo-mes').forEach(check => {
+            check.checked = true;
+        });
+    });
+}
+
+if (document.getElementById('btn-deseleccionar-meses')) {
+    document.getElementById('btn-deseleccionar-meses').addEventListener('click', function() {
+        document.querySelectorAll('.campo-mes').forEach(check => {
+            check.checked = false;
+        });
+    });
+}
+
+// Seleccionar/Deseleccionar solo conceptos
+if (document.getElementById('btn-seleccionar-conceptos')) {
+    document.getElementById('btn-seleccionar-conceptos').addEventListener('click', function() {
+        document.querySelectorAll('.campo-concepto').forEach(check => {
+            check.checked = true;
+        });
+    });
+}
+
+if (document.getElementById('btn-deseleccionar-conceptos')) {
+    document.getElementById('btn-deseleccionar-conceptos').addEventListener('click', function() {
+        document.querySelectorAll('.campo-concepto').forEach(check => {
+            check.checked = false;
+        });
+    });
+}
+
 // Obtener campos seleccionados
 function obtenerCamposSeleccionados() {
     const campos = [];
@@ -322,5 +356,169 @@ if (document.getElementById('btn-exportar-pdf')) {
         
         // Redirigir a la ruta de exportación
         window.location.href = `/api/exportar/pdf?gestion_id=${gestionId}&campos=${campos.join(',')}`;
+    });
+}
+
+// ===================== FUNCIONALIDAD TRASPASAR =====================
+
+// Deslizante Traspasar
+const traspasarBtn = document.getElementById('toggle-traspasar');
+const traspasarMenu = document.getElementById('traspasar-menu');
+let traspasarAbierto = false;
+if (traspasarBtn && traspasarMenu) {
+    traspasarBtn.addEventListener('click', function() {
+        traspasarAbierto = !traspasarAbierto;
+        if (traspasarAbierto) {
+            traspasarMenu.style.maxHeight = '1200px';
+            traspasarMenu.style.padding = '0 20px 20px 20px';
+            traspasarBtn.innerHTML = 'Traspasar ▲';
+            cargarGestionesTraspasar();
+        } else {
+            traspasarMenu.style.maxHeight = '0';
+            traspasarMenu.style.padding = '0 20px';
+            traspasarBtn.innerHTML = 'Traspasar ▼';
+        }
+    });
+}
+
+// Cargar gestiones en los selects de traspasar
+async function cargarGestionesTraspasar() {
+    try {
+        const response = await fetch('/api/gestiones');
+        const gestiones = await response.json();
+        
+        const selectOrigen = document.getElementById('traspasar-origen');
+        const selectDestino = document.getElementById('traspasar-destino');
+        
+        selectOrigen.innerHTML = '<option value="">-- Seleccionar Origen --</option>';
+        selectDestino.innerHTML = '<option value="">-- Seleccionar Destino --</option>';
+        
+        gestiones.forEach(g => {
+            const option = `<option value="${g.id}">${g.nombre || 'Gestión ' + g.anio} (${g.anio})</option>`;
+            selectOrigen.innerHTML += option;
+            selectDestino.innerHTML += option;
+        });
+    } catch (error) {
+        console.error('Error al cargar gestiones:', error);
+    }
+}
+
+// Seleccionar/Deseleccionar todos los campos de traspasar
+if (document.getElementById('btn-seleccionar-todos-traspasar')) {
+    document.getElementById('btn-seleccionar-todos-traspasar').addEventListener('click', function() {
+        document.querySelectorAll('.campo-traspasar').forEach(check => {
+            check.checked = true;
+        });
+    });
+}
+
+if (document.getElementById('btn-deseleccionar-todos-traspasar')) {
+    document.getElementById('btn-deseleccionar-todos-traspasar').addEventListener('click', function() {
+        document.querySelectorAll('.campo-traspasar').forEach(check => {
+            check.checked = false;
+        });
+    });
+}
+
+// Seleccionar/Deseleccionar solo meses de traspasar
+if (document.getElementById('btn-seleccionar-meses-traspasar')) {
+    document.getElementById('btn-seleccionar-meses-traspasar').addEventListener('click', function() {
+        document.querySelectorAll('.campo-mes-traspasar').forEach(check => {
+            check.checked = true;
+        });
+    });
+}
+
+if (document.getElementById('btn-deseleccionar-meses-traspasar')) {
+    document.getElementById('btn-deseleccionar-meses-traspasar').addEventListener('click', function() {
+        document.querySelectorAll('.campo-mes-traspasar').forEach(check => {
+            check.checked = false;
+        });
+    });
+}
+
+// Seleccionar/Deseleccionar solo conceptos de traspasar
+if (document.getElementById('btn-seleccionar-conceptos-traspasar')) {
+    document.getElementById('btn-seleccionar-conceptos-traspasar').addEventListener('click', function() {
+        document.querySelectorAll('.campo-concepto-traspasar').forEach(check => {
+            check.checked = true;
+        });
+    });
+}
+
+if (document.getElementById('btn-deseleccionar-conceptos-traspasar')) {
+    document.getElementById('btn-deseleccionar-conceptos-traspasar').addEventListener('click', function() {
+        document.querySelectorAll('.campo-concepto-traspasar').forEach(check => {
+            check.checked = false;
+        });
+    });
+}
+
+// Obtener campos seleccionados para traspasar
+function obtenerCamposTraspasar() {
+    const campos = [];
+    document.querySelectorAll('.campo-traspasar:checked').forEach(check => {
+        campos.push(check.value);
+    });
+    return campos;
+}
+
+// Ejecutar traspaso
+if (document.getElementById('btn-traspasar')) {
+    document.getElementById('btn-traspasar').addEventListener('click', async function() {
+        const origenId = document.getElementById('traspasar-origen').value;
+        const destinoId = document.getElementById('traspasar-destino').value;
+        const campos = obtenerCamposTraspasar();
+        
+        if (!origenId) {
+            mostrarModalAdvertencia('Por favor, selecciona una gestión de origen.');
+            return;
+        }
+        
+        if (!destinoId) {
+            mostrarModalAdvertencia('Por favor, selecciona una gestión de destino.');
+            return;
+        }
+        
+        if (origenId === destinoId) {
+            mostrarModalAdvertencia('La gestión de origen y destino no pueden ser la misma.');
+            return;
+        }
+        
+        if (campos.length === 0) {
+            mostrarModalAdvertencia('Por favor, selecciona al menos un campo para traspasar.');
+            return;
+        }
+        
+        // Confirmar traspaso
+        if (!confirm('¿Estás seguro de que deseas traspasar los datos? Esta acción actualizará los clientes existentes y creará los nuevos.')) {
+            return;
+        }
+        
+        try {
+            const response = await fetch('/api/traspasar', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                },
+                body: JSON.stringify({
+                    origen_id: origenId,
+                    destino_id: destinoId,
+                    campos: campos
+                })
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                alert(`Traspaso completado exitosamente.\n\n${result.actualizados} clientes actualizados.\n${result.creados} clientes creados.`);
+            } else {
+                mostrarModalAdvertencia(result.message || 'Error al realizar el traspaso.');
+            }
+        } catch (error) {
+            console.error('Error al traspasar:', error);
+            mostrarModalAdvertencia('Error al realizar el traspaso. Por favor, intenta de nuevo.');
+        }
     });
 }
