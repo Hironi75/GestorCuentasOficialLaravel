@@ -228,11 +228,99 @@ if (exportarBtn && exportarMenu) {
     exportarBtn.addEventListener('click', function() {
         exportarAbierto = !exportarAbierto;
         if (exportarAbierto) {
-            exportarMenu.style.maxHeight = '200px';
+            exportarMenu.style.maxHeight = '1200px';
+            exportarMenu.style.padding = '0 20px 20px 20px';
             exportarBtn.innerHTML = 'Exportar ▲';
+            cargarGestionesExportar();
         } else {
             exportarMenu.style.maxHeight = '0';
+            exportarMenu.style.padding = '0 20px';
             exportarBtn.innerHTML = 'Exportar ▼';
         }
+    });
+}
+
+// ===================== FUNCIONALIDAD EXPORTAR =====================
+
+// Cargar gestiones en el select de exportar
+async function cargarGestionesExportar() {
+    try {
+        const response = await fetch('/api/gestiones');
+        const gestiones = await response.json();
+        const select = document.getElementById('exportar-gestion');
+        select.innerHTML = '<option value="">-- Seleccionar Gestión --</option>';
+        gestiones.forEach(g => {
+            select.innerHTML += `<option value="${g.id}">${g.nombre || 'Gestión ' + g.anio} (${g.anio})</option>`;
+        });
+    } catch (error) {
+        console.error('Error al cargar gestiones:', error);
+    }
+}
+
+// Seleccionar/Deseleccionar todos los campos
+if (document.getElementById('btn-seleccionar-todos-campos')) {
+    document.getElementById('btn-seleccionar-todos-campos').addEventListener('click', function() {
+        document.querySelectorAll('.campo-exportar').forEach(check => {
+            check.checked = true;
+        });
+    });
+}
+
+if (document.getElementById('btn-deseleccionar-todos-campos')) {
+    document.getElementById('btn-deseleccionar-todos-campos').addEventListener('click', function() {
+        document.querySelectorAll('.campo-exportar').forEach(check => {
+            check.checked = false;
+        });
+    });
+}
+
+// Obtener campos seleccionados
+function obtenerCamposSeleccionados() {
+    const campos = [];
+    document.querySelectorAll('.campo-exportar:checked').forEach(check => {
+        campos.push(check.value);
+    });
+    return campos;
+}
+
+// Exportar a Excel
+if (document.getElementById('btn-exportar-excel')) {
+    document.getElementById('btn-exportar-excel').addEventListener('click', function() {
+        const gestionId = document.getElementById('exportar-gestion').value;
+        const campos = obtenerCamposSeleccionados();
+        
+        if (!gestionId) {
+            mostrarModalAdvertencia('Por favor, selecciona una gestión.');
+            return;
+        }
+        
+        if (campos.length === 0) {
+            mostrarModalAdvertencia('Por favor, selecciona al menos un campo para exportar.');
+            return;
+        }
+        
+        // Redirigir a la ruta de exportación
+        window.location.href = `/api/exportar/excel?gestion_id=${gestionId}&campos=${campos.join(',')}`;
+    });
+}
+
+// Exportar a PDF
+if (document.getElementById('btn-exportar-pdf')) {
+    document.getElementById('btn-exportar-pdf').addEventListener('click', function() {
+        const gestionId = document.getElementById('exportar-gestion').value;
+        const campos = obtenerCamposSeleccionados();
+        
+        if (!gestionId) {
+            mostrarModalAdvertencia('Por favor, selecciona una gestión.');
+            return;
+        }
+        
+        if (campos.length === 0) {
+            mostrarModalAdvertencia('Por favor, selecciona al menos un campo para exportar.');
+            return;
+        }
+        
+        // Redirigir a la ruta de exportación
+        window.location.href = `/api/exportar/pdf?gestion_id=${gestionId}&campos=${campos.join(',')}`;
     });
 }
