@@ -23,7 +23,11 @@
                 <p>Aquí podrás realizar las configuraciones correspondientes de tu cuenta.</p>
                 <!-- Agrega aquí los formularios y opciones de configuración que necesites -->
 
-                <button id="toggle-gestiones" class="gestor-toolbar" style="margin-top:24px; font-size:1.1rem; background:#27ae60; color:#fff; border:none; padding:10px 22px; border-radius:4px; cursor:pointer;">Gestiones ▼</button>
+
+                <div style="display:flex; gap:12px; align-items:center; margin-bottom:8px;">
+                    <button id="toggle-gestiones" class="gestor-toolbar" style="margin-top:24px; font-size:1.1rem; background:#27ae60; color:#fff; border:none; padding:10px 22px; border-radius:4px; cursor:pointer;">Gestiones ▼</button>
+                    <button id="toggle-exportar" class="gestor-toolbar" style="margin-top:24px; font-size:1.1rem; background:#f39c12; color:#fff; border:none; padding:10px 22px; border-radius:4px; cursor:pointer;">Exportar ▼</button>
+                </div>
                 <div id="gestiones-crud" style="max-height:0; overflow:hidden; transition:max-height 0.5s ease; background:#ecf0f1; border-radius:8px; box-shadow:0 4px 12px rgba(0,0,0,0.12); margin-top:18px; padding:0 20px;">
                     <!-- Aquí va el CRUD de gestiones -->
                     <h3 style="margin-top:18px;">CRUD de Gestiones</h3>
@@ -53,6 +57,13 @@
                         </tbody>
                     </table>
                 </div>
+                <div id="exportar-menu" style="max-height:0; overflow:hidden; transition:max-height 0.5s ease; background:#ecf0f1; border-radius:8px; box-shadow:0 4px 12px rgba(0,0,0,0.12); margin-top:18px; padding:0 20px;">
+                    <!-- Aquí va el CRUD de exportar -->
+                    <h3 style="margin-top:18px;">CRUD de EXPORTAR</h3>
+                    
+  
+                </div>
+
             </section>
         </main>
     </div>

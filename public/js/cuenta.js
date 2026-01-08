@@ -219,3 +219,20 @@ toggleBtn.addEventListener('click', function() {
         toggleBtn.innerHTML = 'Gestiones ▼';
     }
 });
+
+// Deslizante Exportar
+const exportarBtn = document.getElementById('toggle-exportar');
+const exportarMenu = document.getElementById('exportar-menu');
+let exportarAbierto = false;
+if (exportarBtn && exportarMenu) {
+    exportarBtn.addEventListener('click', function() {
+        exportarAbierto = !exportarAbierto;
+        if (exportarAbierto) {
+            exportarMenu.style.maxHeight = '200px';
+            exportarBtn.innerHTML = 'Exportar ▲';
+        } else {
+            exportarMenu.style.maxHeight = '0';
+            exportarBtn.innerHTML = 'Exportar ▼';
+        }
+    });
+}
