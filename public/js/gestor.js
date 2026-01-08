@@ -331,37 +331,43 @@ window.addEventListener('DOMContentLoaded', function() {
     }
 
     // ==================== GESTIONES ====================
-    function cargarGestiones() {
-        apiRequest('/api/gestiones')
+    function mostrarGestionActivaRapido() {
+        fetch('/gestiones')
             .then(res => res.json())
             .then(gestiones => {
-                elementos.selectGestion.innerHTML = '';
-                gestiones.forEach(g => {
-                    const option = document.createElement('option');
-                    option.value = g.id;
-                    option.textContent = g.nombre || `Gestión ${g.anio}`;
-                    if (g.activa) {
-                        option.selected = true;
-                        gestionActual = g.id;
-                    }
-                    elementos.selectGestion.appendChild(option);
-                });
-                actualizarLabelGestion();
+                const activa = gestiones.find(g => g.activa);
+                const label = document.getElementById('gestion-activa-label');
+                if (label && activa) {
+                    label.textContent = activa.nombre || `Gestión ${activa.anio}`;
+                }
+            });
+    }
+    // Mostrar gestión activa lo antes posible
+    mostrarGestionActivaRapido();
+    
+    function cargarGestiones() {
+        fetch('/gestiones')
+            .then(res => res.json())
+            .then(gestiones => {
+                const activa = gestiones.find(g => g.activa);
+                const label = document.getElementById('gestion-activa-label');
+                if (label && activa) {
+                    label.textContent = activa.nombre || `Gestión ${activa.anio}`;
+                    gestionActual = activa.id;
+                }
+                // Cargar clientes después de obtener la gestión activa
                 cargarClientes();
             });
     }
-
-    function actualizarLabelGestion() {
-        const selectedOption = elementos.selectGestion.options[elementos.selectGestion.selectedIndex];
-        if (selectedOption && elementos.gestionActualLabel) {
-            elementos.gestionActualLabel.textContent = `(${selectedOption.textContent})`;
-        }
-    }
-
+    cargarGestiones();
+    
     // ==================== CARGAR CLIENTES ====================
     function cargarClientes() {
-        const gestionId = elementos.selectGestion.value || gestionActual;
-        const url = gestionId ? `/api/clientes?gestion_id=${gestionId}` : '/api/clientes';
+        if (!gestionActual) {
+            // Si aún no hay gestión activa, esperar
+            return;
+        }
+        const url = `/api/clientes?gestion_id=${gestionActual}`;
         
         apiRequest(url)
             .then(res => res.json())
@@ -372,24 +378,10 @@ window.addEventListener('DOMContentLoaded', function() {
                 } else {
                     filtrarClientes();
                 }
+            })
+            .catch(err => {
+                console.error('Error al cargar clientes:', err);
             });
-    }
-    
-    // Cargar gestiones primero (esto cargará clientes después)
-    cargarGestiones();
-    
-    // Event listener para cambio de gestión
-    if (elementos.selectGestion) {
-        elementos.selectGestion.addEventListener('change', () => {
-            gestionActual = elementos.selectGestion.value;
-            actualizarLabelGestion();
-            // Resetear filtros
-            mostrandoDeudores = false;
-            elementos.btnDeudores.textContent = 'Deudores';
-            elementos.filtroCuentas.value = '';
-            elementos.filtroDias.value = 'todos';
-            cargarClientes();
-        });
     }
 
         // Refuerzo: los filtros siempre operan sobre clientesData, que solo contiene los clientes de la gestión seleccionada

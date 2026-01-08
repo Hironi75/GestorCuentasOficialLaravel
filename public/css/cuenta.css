@@ -1,0 +1,187 @@
+#gestiones-crud {
+    box-shadow: 0 4px 18px rgba(44,62,80,0.10);
+    background: #f7f9fa;
+    border-radius: 12px;
+    padding: 24px 28px 18px 28px;
+    margin-top: 18px;
+}
+#gestiones-crud h3 {
+    margin-top: 0;
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: #34495e;
+}
+#gestiones-crud .form-group {
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+#gestiones-crud label {
+    min-width: 150px;
+    font-weight: 500;
+    color: #2c3e50;
+}
+#gestiones-crud input[type="number"],
+#gestiones-crud input[type="text"] {
+    padding: 7px 12px;
+    border: 1px solid #b2bec3;
+    border-radius: 5px;
+    font-size: 1em;
+    background: #fff;
+    width: 180px;
+}
+#gestiones-crud button[type="submit"] {
+    background: #27ae60;
+    color: #fff;
+    border: none;
+    padding: 8px 22px;
+    border-radius: 5px;
+    font-size: 1em;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 8px;
+    transition: background 0.2s;
+}
+#gestiones-crud button[type="submit"]:hover {
+    background: #219150;
+}
+#gestiones-crud table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #fff;
+    margin-top: 18px;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(44,62,80,0.07);
+}
+#gestiones-crud th, #gestiones-crud td {
+    border: 1px solid #e8e8e8;
+    padding: 10px 8px;
+    text-align: center;
+}
+#gestiones-crud th {
+    background: #ecf0f1;
+    color: #34495e;
+    font-weight: 700;
+    font-size: 1.05em;
+}
+#gestiones-crud td button {
+    margin: 0 2px;
+    font-size: 0.97em;
+    padding: 5px 14px;
+    border-radius: 4px;
+    border: none;
+    font-weight: 500;
+    transition: background 0.2s;
+}
+#gestiones-crud td button[onclick^="eliminarGestion"] {
+    background: #e74c3c;
+    color: #fff;
+}
+#gestiones-crud td button[onclick^="eliminarGestion"]:hover {
+    background: #c0392b;
+}
+#gestiones-crud td button[onclick^="activarGestion"] {
+    background: #b2bec3;
+    color: #fff;
+}
+#gestiones-crud td button[onclick^="activarGestion"].activa {
+    background: #27ae60;
+}
+#gestiones-crud td button[onclick^="activarGestion"]:hover {
+    background: #219150;
+}
+
+/* Modal de confirmación */
+.modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    z-index: 9999;
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-overlay.show {
+    display: flex;
+}
+
+.modal-box {
+    background: #fff;
+    border-radius: 12px;
+    padding: 30px 35px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+    max-width: 450px;
+    width: 90%;
+    text-align: center;
+}
+
+.modal-box h3 {
+    margin: 0 0 15px 0;
+    color: #e74c3c;
+    font-size: 1.5rem;
+}
+
+.modal-box p {
+    margin: 0 0 25px 0;
+    color: #555;
+    font-size: 1.05rem;
+}
+
+.modal-buttons {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+}
+
+.modal-buttons button {
+    padding: 10px 24px;
+    border: none;
+    border-radius: 6px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.modal-buttons .btn-confirmar {
+    background: #e74c3c;
+    color: #fff;
+}
+
+.modal-buttons .btn-confirmar:hover {
+    background: #c0392b;
+}
+
+.modal-buttons .btn-cancelar {
+    background: #b2bec3;
+    color: #fff;
+}
+
+.modal-buttons .btn-cancelar:hover {
+    background: #95a5a6;
+}
+
+/* Modal de advertencia */
+.modal-advertencia h3 {
+    color: #f39c12;
+}
+
+.modal-advertencia .icono-advertencia {
+    font-size: 3rem;
+    margin-bottom: 10px;
+}
+
+.modal-buttons .btn-aceptar {
+    background: #3498db;
+    color: #fff;
+}
+
+.modal-buttons .btn-aceptar:hover {
+    background: #2980b9;
+}

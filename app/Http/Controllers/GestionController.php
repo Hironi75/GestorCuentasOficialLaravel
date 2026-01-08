@@ -68,4 +68,19 @@ class GestionController extends Controller
         $gestion->delete();
         return response()->json(['success' => true]);
     }
+
+    // Editar gestión
+    public function update(Request $request, $id)
+    {
+        $gestion = Gestion::findOrFail($id);
+        $anio = $request->input('anio');
+        // Verificar si ya existe otra gestión con ese año
+        if (Gestion::where('anio', $anio)->where('id', '!=', $id)->exists()) {
+            return response()->json(['error' => 'Ya existe una gestión para el año ' . $anio], 422);
+        }
+        $gestion->anio = $anio;
+        $gestion->nombre = $request->input('nombre') ?? ('Gestión ' . $anio);
+        $gestion->save();
+        return response()->json($gestion);
+    }
 }

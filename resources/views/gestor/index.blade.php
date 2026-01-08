@@ -14,11 +14,12 @@
     <div class="gestor-main-container">
         <header class="gestor-header">
             <h1>Gestor de Cuentas</h1>
-                <div class="subtitle"><a href="#" id="link-cuenta" style="color:#27ae60;text-decoration:underline;cursor:pointer;">Cuenta</a> &nbsp;|&nbsp; Gestor</div>
+            <nav class="nav-tabs">
+                <a href="/cuenta" class="nav-tab">Cuenta</a>
+                <a href="/gestor" class="nav-tab active">Gestor</a>
+            </nav>
             <div class="gestion-selector">
-                <label>Gestión:</label>
-                <select id="select-gestion"></select>
-                <button id="btn-nueva-gestion" title="Nueva Gestión">+</button>
+                <span id="gestion-activa-label" style="font-size:1.1em; background:#f5f6fa; color:#34495e; padding:7px 16px; border-radius:7px; margin-left:4px; display:inline-block; min-width:120px;"></span>
             </div>
             <button onclick="window.location.href='/'" class="logout-btn">Cerrar sesión</button>
         </header>
@@ -245,25 +246,7 @@
         </div>
     </div>
 
-    <!-- Modal Cuenta (Gestiones) -->
-    <div id="modal-cuenta" class="modal" style="display:none;">
-        <div class="modal-content" style="max-width:500px;">
-            <h2>Gestión de Cuentas</h2>
-            <table id="tabla-gestiones" class="gestor-table" style="margin-bottom:18px;">
-                <thead>
-                    <tr>
-                        <th>Año</th>
-                        <th>Activa</th>
-                        <th>Acciones</th>
-                    </tr>
-                </thead>
-                <tbody id="gestiones-body">
-                    <!-- Filas dinámicas -->
-                </tbody>
-            </table>
-            <button id="btn-cerrar-cuenta" style="background:#27ae60;color:#fff;padding:8px 18px;border:none;border-radius:6px;">Cerrar</button>
-        </div>
-    </div>
+    <!-- Modal Cuenta (Gestiones) eliminado, ahora la edición se hará en la vista cuenta -->
     </main>
     </div>
     <script src="script.js"></script>
