@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Gestion;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class GestionController extends Controller
 {
@@ -16,20 +17,29 @@ class GestionController extends Controller
     // Crear nueva gestión
     public function store(Request $request)
     {
-        $anio = $request->input('anio');
-        
-        // Verificar si ya existe una gestión con ese año
-        if (Gestion::where('anio', $anio)->exists()) {
-            return response()->json(['error' => 'Ya existe una gestión para el año ' . $anio], 422);
+        try {
+            $anio = $request->input('anio');
+            
+            // Verificar si ya existe una gestión con ese año
+            if (Gestion::where('anio', $anio)->exists()) {
+                return response()->json(['error' => 'Ya existe una gestión para el año ' . $anio], 422);
+            }
+
+            \DB::beginTransaction();
+            
+            $gestion = Gestion::create([
+                'anio' => $anio,
+                'nombre' => $request->input('nombre') ?? 'Gestión ' . $anio,
+                'activa' => false
+            ]);
+            
+            \DB::commit();
+
+            return response()->json($gestion, 201);
+        } catch (\Exception $e) {
+            \DB::rollBack();
+            return response()->json(['error' => 'Error al crear gestión'], 500);
         }
-
-        $gestion = Gestion::create([
-            'anio' => $anio,
-            'nombre' => $request->input('nombre') ?? 'Gestión ' . $anio,
-            'activa' => false
-        ]);
-
-        return response()->json($gestion, 201);
     }
 
     // Obtener gestión activa
@@ -42,45 +52,76 @@ class GestionController extends Controller
     // Cambiar gestión activa
     public function setActiva($id)
     {
-        // Desactivar todas
-        Gestion::query()->update(['activa' => false]);
-        
-        // Activar la seleccionada
-        $gestion = Gestion::findOrFail($id);
-        $gestion->activa = true;
-        $gestion->save();
-
-        return response()->json($gestion);
+        try {
+            \DB::beginTransaction();
+            
+            // Desactivar todas
+            Gestion::query()->update(['activa' => false]);
+            
+            // Activar la seleccionada
+            $gestion = Gestion::findOrFail($id);
+            $gestion->activa = true;
+            $gestion->save();
+            
+            \DB::commit();
+            
+            return response()->json($gestion);
+        } catch (\Exception $e) {
+            \DB::rollBack();
+            return response()->json(['error' => 'Error al cambiar gestión activa'], 500);
+        }
     }
 
     // Eliminar gestión
     public function destroy($id)
     {
-        $gestion = Gestion::findOrFail($id);
-        
-        // No permitir eliminar si tiene clientes
-        if ($gestion->clientes()->count() > 0) {
-            return response()->json([
-                'message' => 'No se puede eliminar una gestión con clientes asociados'
-            ], 400);
+        try {
+            $gestion = Gestion::findOrFail($id);
+            
+            // No permitir eliminar si tiene clientes
+            if ($gestion->clientes()->count() > 0) {
+                return response()->json([
+                    'message' => 'No se puede eliminar una gestión con clientes asociados'
+                ], 400);
+            }
+            
+            \DB::beginTransaction();
+            
+            $gestion->delete();
+            
+            \DB::commit();
+            
+            return response()->json(['success' => true]);
+        } catch (\Exception $e) {
+            \DB::rollBack();
+            return response()->json(['error' => 'Error al eliminar gestión'], 500);
         }
-        
-        $gestion->delete();
-        return response()->json(['success' => true]);
     }
 
     // Editar gestión
     public function update(Request $request, $id)
     {
-        $gestion = Gestion::findOrFail($id);
-        $anio = $request->input('anio');
-        // Verificar si ya existe otra gestión con ese año
-        if (Gestion::where('anio', $anio)->where('id', '!=', $id)->exists()) {
-            return response()->json(['error' => 'Ya existe una gestión para el año ' . $anio], 422);
+        try {
+            $gestion = Gestion::findOrFail($id);
+            $anio = $request->input('anio');
+            
+            // Verificar si ya existe otra gestión con ese año
+            if (Gestion::where('anio', $anio)->where('id', '!=', $id)->exists()) {
+                return response()->json(['error' => 'Ya existe una gestión para el año ' . $anio], 422);
+            }
+            
+            \DB::beginTransaction();
+            
+            $gestion->anio = $anio;
+            $gestion->nombre = $request->input('nombre') ?? ('Gestión ' . $anio);
+            $gestion->save();
+            
+            \DB::commit();
+            
+            return response()->json($gestion);
+        } catch (\Exception $e) {
+            \DB::rollBack();
+            return response()->json(['error' => 'Error al actualizar gestión'], 500);
         }
-        $gestion->anio = $anio;
-        $gestion->nombre = $request->input('nombre') ?? ('Gestión ' . $anio);
-        $gestion->save();
-        return response()->json($gestion);
     }
 }

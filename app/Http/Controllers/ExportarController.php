@@ -101,6 +101,11 @@ class ExportarController extends Controller
         
         $callback = function() use ($clientes, $camposOrdenados) {
             $file = fopen('php://output', 'w');
+            
+            if ($file === false) {
+                return;
+            }
+            
             // BOM para UTF-8 en Excel
             fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF));
             
@@ -117,7 +122,7 @@ class ExportarController extends Controller
                 fputcsv($file, $fila);
             }
             
-            fclose($file);
+            // NO cerrar php://output - Laravel lo maneja
         };
         
         return response()->stream($callback, 200, $headers);

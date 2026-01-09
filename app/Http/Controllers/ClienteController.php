@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Cliente;
 use App\Models\Gestion;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class ClienteController extends Controller
 {
@@ -71,19 +72,28 @@ class ClienteController extends Controller
     // Guardar un nuevo cliente desde AJAX
     public function store(Request $request)
     {
-        $validated = $request->validate($this->getValidationRules());
-        
-        // Asignar gestión activa si no se especifica
-        if (!isset($validated['gestion_id']) || !$validated['gestion_id']) {
-            $gestionActiva = Gestion::activa();
-            $validated['gestion_id'] = $gestionActiva ? $gestionActiva->id : null;
-        }
-        
-        $cliente = new Cliente($validated);
-        $this->asignarMeses($cliente, $request);
-        $cliente->save();
+        try {
+            $validated = $request->validate($this->getValidationRules());
+            
+            // Asignar gestión activa si no se especifica
+            if (!isset($validated['gestion_id']) || !$validated['gestion_id']) {
+                $gestionActiva = Gestion::activa();
+                $validated['gestion_id'] = $gestionActiva ? $gestionActiva->id : null;
+            }
+            
+            \DB::beginTransaction();
+            
+            $cliente = new Cliente($validated);
+            $this->asignarMeses($cliente, $request);
+            $cliente->save();
+            
+            \DB::commit();
 
-        return response()->json($cliente, 201);
+            return response()->json($cliente, 201);
+        } catch (\Exception $e) {
+            \DB::rollBack();
+            return response()->json(['error' => 'Error al guardar cliente: ' . $e->getMessage()], 500);
+        }
     }
 
     // Mostrar un cliente específico
@@ -95,20 +105,40 @@ class ClienteController extends Controller
     // Actualizar un cliente
     public function update(Request $request, $id)
     {
-        $cliente = Cliente::findOrFail($id);
-        $validated = $request->validate($this->getValidationRules(true));
+        try {
+            $cliente = Cliente::findOrFail($id);
+            $validated = $request->validate($this->getValidationRules(true));
 
-        $cliente->fill($validated);
-        $this->asignarMeses($cliente, $request);
-        $cliente->save();
+            \DB::beginTransaction();
+            
+            $cliente->fill($validated);
+            $this->asignarMeses($cliente, $request);
+            $cliente->save();
+            
+            \DB::commit();
 
-        return response()->json($cliente);
+            return response()->json($cliente);
+        } catch (\Exception $e) {
+            \DB::rollBack();
+            return response()->json(['error' => 'Error al actualizar cliente: ' . $e->getMessage()], 500);
+        }
     }
 
     // Eliminar un cliente
     public function destroy($id)
     {
-        Cliente::findOrFail($id)->delete();
-        return response()->json(['success' => true]);
+        try {
+            \DB::beginTransaction();
+            
+            $cliente = Cliente::findOrFail($id);
+            $cliente->delete();
+            
+            \DB::commit();
+            
+            return response()->json(['success' => true]);
+        } catch (\Exception $e) {
+            \DB::rollBack();
+            return response()->json(['error' => 'Error al eliminar cliente'], 500);
+        }
     }
 }
