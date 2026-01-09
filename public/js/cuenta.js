@@ -1,3 +1,6 @@
+// Variable global para almacenar datos del traspaso
+let datosTraspaso = null;
+
 document.addEventListener('DOMContentLoaded', function() {
     cargarGestiones();
     document.getElementById('form-gestion').addEventListener('submit', crearGestion);
@@ -54,13 +57,14 @@ function crearGestion(e) {
         .then(r => r.json())
         .then(res => {
             if(res.error) {
-                alert(res.error);
+                mostrarModalAdvertencia(res.error);
             } else {
                 cargarGestiones();
                 document.getElementById('form-gestion').reset();
                 editandoId = null;
                 document.getElementById('btn-crear-editar').textContent = 'Crear Gestión';
                 document.getElementById('btn-cancelar-edicion').style.display = 'none';
+                mostrarModalExito('¡Gestión actualizada exitosamente!');
             }
         });
     } else {
@@ -75,10 +79,11 @@ function crearGestion(e) {
         .then(r => r.json())
         .then(res => {
             if(res.error) {
-                alert(res.error);
+                mostrarModalAdvertencia(res.error);
             } else {
                 cargarGestiones();
                 document.getElementById('form-gestion').reset();
+                mostrarModalExito('¡Gestión creada exitosamente!');
             }
         });
     }
@@ -134,6 +139,62 @@ function mostrarModalAdvertencia(mensaje) {
 
 function cerrarModalAdvertencia() {
     const modal = document.getElementById('modal-advertencia');
+    if (modal) {
+        modal.style.display = 'none';
+        modal.classList.remove('show');
+    }
+}
+
+function mostrarModalExito(mensaje, detalles = null) {
+    const modal = document.getElementById('modal-exito');
+    const mensajeEl = document.getElementById('mensaje-exito');
+    const detallesEl = document.getElementById('detalles-exito');
+    
+    if (modal && mensajeEl) {
+        mensajeEl.textContent = mensaje;
+        
+        if (detalles) {
+            detallesEl.innerHTML = detalles;
+            detallesEl.style.display = 'block';
+        } else {
+            detallesEl.style.display = 'none';
+        }
+        
+        modal.style.display = 'flex';
+        modal.classList.add('show');
+    }
+}
+
+function cerrarModalExito() {
+    const modal = document.getElementById('modal-exito');
+    if (modal) {
+        modal.style.display = 'none';
+        modal.classList.remove('show');
+    }
+}
+
+function mostrarModalExito(mensaje, detalles = null) {
+    const modal = document.getElementById('modal-exito');
+    const mensajeEl = document.getElementById('mensaje-exito');
+    const detallesEl = document.getElementById('detalles-exito');
+    
+    if (modal && mensajeEl) {
+        mensajeEl.textContent = mensaje;
+        
+        if (detalles) {
+            detallesEl.innerHTML = detalles;
+            detallesEl.style.display = 'block';
+        } else {
+            detallesEl.style.display = 'none';
+        }
+        
+        modal.style.display = 'flex';
+        modal.classList.add('show');
+    }
+}
+
+function cerrarModalExito() {
+    const modal = document.getElementById('modal-exito');
     if (modal) {
         modal.style.display = 'none';
         modal.classList.remove('show');
@@ -196,12 +257,20 @@ function activarGestion(id) {
 window.addEventListener('click', function(event) {
     const modalConfirmacion = document.getElementById('modal-confirmacion');
     const modalAdvertencia = document.getElementById('modal-advertencia');
+    const modalExito = document.getElementById('modal-exito');
+    const modalConfirmacionTraspaso = document.getElementById('modal-confirmacion-traspaso');
     
     if (event.target === modalConfirmacion) {
         cerrarModalConfirmacion();
     }
     if (event.target === modalAdvertencia) {
         cerrarModalAdvertencia();
+    }
+    if (event.target === modalExito) {
+        cerrarModalExito();
+    }
+    if (event.target === modalConfirmacionTraspaso) {
+        cerrarModalConfirmacionTraspaso();
     }
 });
 
@@ -490,35 +559,80 @@ if (document.getElementById('btn-traspasar')) {
             return;
         }
         
-        // Confirmar traspaso
-        if (!confirm('¿Estás seguro de que deseas traspasar los datos? Esta acción actualizará los clientes existentes y creará los nuevos.')) {
-            return;
+        // Guardar datos y mostrar modal de confirmación
+        datosTraspaso = { origenId, destinoId, campos };
+        mostrarModalConfirmacionTraspaso();
+    });
+}
+
+function mostrarModalConfirmacionTraspaso() {
+    const modal = document.getElementById('modal-confirmacion-traspaso');
+    if (modal) {
+        modal.style.display = 'flex';
+        modal.classList.add('show');
+    }
+}
+
+function cerrarModalConfirmacionTraspaso() {
+    const modal = document.getElementById('modal-confirmacion-traspaso');
+    if (modal) {
+        modal.style.display = 'none';
+        modal.classList.remove('show');
+    }
+    datosTraspaso = null;
+}
+
+async function confirmarTraspaso() {
+    if (!datosTraspaso) {
+        console.error('datosTraspaso es null');
+        return;
+    }
+    
+    // Guardar los datos antes de cerrar el modal
+    const datos = { ...datosTraspaso };
+    
+    // Ahora sí cerrar el modal y limpiar
+    cerrarModalConfirmacionTraspaso();
+    
+    try {
+        console.log('Enviando datos de traspaso:', datos);
+        
+        const response = await fetch('/api/traspasar', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({
+                origen_id: datos.origenId,
+                destino_id: datos.destinoId,
+                campos: datos.campos
+            })
+        });
+        
+        console.log('Response status:', response.status);
+        
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error('Error response:', errorText);
+            throw new Error(`HTTP error! status: ${response.status}`);
         }
         
-        try {
-            const response = await fetch('/api/traspasar', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                },
-                body: JSON.stringify({
-                    origen_id: origenId,
-                    destino_id: destinoId,
-                    campos: campos
-                })
-            });
-            
-            const result = await response.json();
-            
-            if (result.success) {
-                alert(`Traspaso completado exitosamente.\n\n${result.actualizados} clientes actualizados.\n${result.creados} clientes creados.`);
-            } else {
-                mostrarModalAdvertencia(result.message || 'Error al realizar el traspaso.');
-            }
-        } catch (error) {
-            console.error('Error al traspasar:', error);
-            mostrarModalAdvertencia('Error al realizar el traspaso. Por favor, intenta de nuevo.');
+        const result = await response.json();
+        console.log('Result:', result);
+        
+        if (result.success) {
+            const detallesHTML = `
+                <p><strong>${result.actualizados}</strong> clientes actualizados</p>
+                <p><strong>${result.creados}</strong> clientes creados</p>
+                <p class="mensaje-descripcion">Total procesados: ${result.total} clientes</p>
+            `;
+            mostrarModalExito('¡Traspaso completado exitosamente!', detallesHTML);
+        } else {
+            mostrarModalAdvertencia(result.message || 'Error al realizar el traspaso.');
         }
-    });
+    } catch (error) {
+        console.error('Error completo al traspasar:', error);
+        mostrarModalAdvertencia('Error al realizar el traspaso. Por favor, intenta de nuevo.');
+    }
 }

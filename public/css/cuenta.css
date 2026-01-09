@@ -185,3 +185,91 @@
 .modal-buttons .btn-aceptar:hover {
     background: #2980b9;
 }
+
+/* Modal de éxito */
+.modal-exito {
+    background: linear-gradient(135deg, #f5f7fa 0%, #ffffff 100%);
+}
+
+.modal-exito h3 {
+    color: #27ae60;
+    font-size: 1.6rem;
+    margin-bottom: 10px;
+}
+
+.modal-exito .icono-exito {
+    font-size: 4rem;
+    margin-bottom: 15px;
+    animation: scaleIn 0.3s ease-out;
+}
+
+.modal-exito .detalles-traspaso {
+    background: #e8f8f5;
+    border-left: 4px solid #27ae60;
+    padding: 15px;
+    margin: 20px 0;
+    border-radius: 6px;
+    text-align: left;
+}
+
+.modal-exito .detalles-traspaso p {
+    margin: 8px 0;
+    color: #2c3e50;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.modal-exito .detalles-traspaso strong {
+    color: #27ae60;
+    font-size: 1.2rem;
+    min-width: 30px;
+    text-align: center;
+}
+
+.modal-exito .mensaje-descripcion {
+    color: #7f8c8d;
+    font-size: 0.95rem;
+    margin-top: 10px;
+}
+
+@keyframes scaleIn {
+    from {
+        transform: scale(0);
+        opacity: 0;
+    }
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+/* Animación de entrada del modal */
+@keyframes fadeInModal {
+    from {
+        opacity: 0;
+        transform: translateY(-50px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.modal-box {
+    animation: fadeInModal 0.3s ease-out;
+}
+
+/* Botón de éxito */
+.modal-buttons .btn-exito {
+    background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
+    color: #fff;
+    box-shadow: 0 4px 15px rgba(39, 174, 96, 0.3);
+}
+
+.modal-buttons .btn-exito:hover {
+    background: linear-gradient(135deg, #229954 0%, #27ae60 100%);
+    box-shadow: 0 6px 20px rgba(39, 174, 96, 0.4);
+    transform: translateY(-2px);
+}

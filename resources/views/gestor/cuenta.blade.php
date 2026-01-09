@@ -455,6 +455,22 @@
         </div>
     </div>
 
+    <!-- Modal de confirmación de traspaso -->
+    <div id="modal-confirmacion-traspaso" class="modal-overlay">
+        <div class="modal-box">
+            <div style="font-size: 3rem; margin-bottom: 10px;">🔄</div>
+            <h3>Confirmar Traspaso</h3>
+            <p>¿Estás seguro de que deseas traspasar los datos?</p>
+            <p style="font-size: 0.9rem; color: #7f8c8d; margin-top: 10px;">
+                Esta acción actualizará los clientes existentes y creará los nuevos.
+            </p>
+            <div class="modal-buttons">
+                <button class="btn-confirmar" onclick="confirmarTraspaso()">Sí, traspasar</button>
+                <button class="btn-cancelar" onclick="cerrarModalConfirmacionTraspaso()">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Modal de advertencia -->
     <div id="modal-advertencia" class="modal-overlay">
         <div class="modal-box modal-advertencia">
@@ -467,6 +483,22 @@
         </div>
     </div>
 
+    <!-- Modal de éxito -->
+    <div id="modal-exito" class="modal-overlay">
+        <div class="modal-box modal-exito">
+            <div class="icono-exito">✅</div>
+            <h3 id="titulo-exito">¡Éxito!</h3>
+            <p id="mensaje-exito"></p>
+            <div id="detalles-exito" class="detalles-traspaso" style="display:none;">
+                <!-- Aquí se mostrarán los detalles del traspaso -->
+            </div>
+            <div class="modal-buttons">
+                <button class="btn-exito" onclick="cerrarModalExito()">¡Entendido!</button>
+            </div>
+        </div>
+    </div>
+
     <script src="{{ asset('js/cuenta.js') }}"></script>
+
 </body>
 </html>
