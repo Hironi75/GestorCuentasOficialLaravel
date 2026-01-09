@@ -22,7 +22,7 @@
                 <span id="gestion-activa-label" class="gestion-badge"></span>
             </div>
             <div class="user-info">
-                <span class="user-name">👤 {{ session('usuario_nombre') }}</span>
+
                 <form method="POST" action="{{ route('logout') }}" style="margin:0;">
                     @csrf
                     <button type="submit" class="logout-btn">Cerrar sesión</button>
