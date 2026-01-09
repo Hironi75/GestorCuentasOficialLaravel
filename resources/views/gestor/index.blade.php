@@ -19,9 +19,15 @@
                 <a href="/gestor" class="nav-tab active">Gestor</a>
             </nav>
             <div class="gestion-selector">
-                <span id="gestion-activa-label" style="font-size:1.1em; background:#f5f6fa; color:#34495e; padding:7px 16px; border-radius:7px; margin-left:4px; display:inline-block; min-width:120px;"></span>
+                <span id="gestion-activa-label" class="gestion-badge"></span>
             </div>
-            <button onclick="window.location.href='/'" class="logout-btn">Cerrar sesión</button>
+            <div class="user-info">
+                <span class="user-name">👤 {{ session('usuario_nombre') }}</span>
+                <form method="POST" action="{{ route('logout') }}" style="margin:0;">
+                    @csrf
+                    <button type="submit" class="logout-btn">Cerrar sesión</button>
+                </form>
+            </div>
         </header>
         <main class="gestor-main">
             <section class="gestor-section">

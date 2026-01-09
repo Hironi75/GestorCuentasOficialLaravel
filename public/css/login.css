@@ -78,3 +78,81 @@ body {
     height: 5px;
     border-radius: 5px 5px 0 0;
 }
+
+/* Mensaje de error y éxito */
+.alert {
+    padding: 12px 15px;
+    border-radius: 5px;
+    margin: 0 10% 15px 10%;
+    font-size: 0.9rem;
+    text-align: center;
+}
+
+.alert-danger {
+    background: #fdf2f2;
+    color: #c0392b;
+    border: 1px solid #e74c3c;
+}
+
+.alert-success {
+    background: #f0fff4;
+    color: #27ae60;
+    border: 1px solid #27ae60;
+}
+
+/* ==================== RESPONSIVE LOGIN.CSS ==================== */
+
+@media (max-width: 480px) {
+    body {
+        padding: 15px;
+        align-items: flex-start;
+        padding-top: 50px;
+    }
+    
+    .login-wrap {
+        width: 100%;
+        max-width: 350px;
+        box-sizing: border-box;
+        padding: 15px 10px;
+    }
+    
+    .login-wrap h2 {
+        font-size: 1.6em;
+    }
+    
+    .login-wrap .form input[type="text"],
+    .login-wrap .form input[type="password"],
+    .login-wrap .form button {
+        width: 90%;
+        margin-left: 5%;
+        height: 48px;
+        font-size: 16px; /* Evita zoom en iOS */
+    }
+    
+    .login-wrap .form button {
+        font-size: 1rem;
+        min-height: 48px;
+    }
+    
+    .alert {
+        margin: 0 5% 15px 5%;
+        font-size: 0.85rem;
+    }
+}
+
+@media (max-width: 320px) {
+    .login-wrap {
+        padding: 10px 8px;
+    }
+    
+    .login-wrap h2 {
+        font-size: 1.4em;
+    }
+    
+    .login-wrap .form input[type="text"],
+    .login-wrap .form input[type="password"],
+    .login-wrap .form button {
+        width: 94%;
+        margin-left: 3%;
+    }
+}

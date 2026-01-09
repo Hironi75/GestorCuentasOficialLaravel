@@ -16,6 +16,13 @@
                 <a href="/cuenta" class="nav-tab active">Cuenta</a>
                 <a href="/gestor" class="nav-tab">Gestor</a>
             </nav>
+            <div class="user-info">
+                <span class="user-name">👤 {{ session('usuario_nombre') }}</span>
+                <form method="POST" action="{{ route('logout') }}" style="margin: 0;">
+                    @csrf
+                    <button type="submit" class="logout-btn">Cerrar Sesión</button>
+                </form>
+            </div>
         </header>
         <main class="gestor-main">
             <section class="gestor-section">
