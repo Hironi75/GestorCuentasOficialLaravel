@@ -6,7 +6,13 @@ use App\Http\Controllers\GestionController;
 use App\Http\Controllers\ExportarController;
 use App\Http\Controllers\TraspasarController;
 
-Route::apiResource('clientes', ClienteController::class);
+Route::apiResource('clientes', ClienteController::class)->names([
+	'index' => 'api.clientes.index',
+	'store' => 'api.clientes.store',
+	'show' => 'api.clientes.show',
+	'update' => 'api.clientes.update',
+	'destroy' => 'api.clientes.destroy',
+]);
 
 // Rutas de exportación
 Route::get('exportar/excel', [ExportarController::class, 'excel']);
