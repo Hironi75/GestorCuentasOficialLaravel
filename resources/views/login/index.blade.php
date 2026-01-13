@@ -32,9 +32,10 @@
       </form>
     </div>
     
+    <!--
     <p style="margin-top: 20px; text-align: center;">
       <a href="{{ route('register') }}" style="color: #3498db; text-decoration: none;">¿No tienes cuenta? Crear una nueva</a>
-    </p>
+    </p>-->
     
     <p style="margin-top: 10px; text-align: center; color: #7f8c8d; font-size: 0.9rem;">
       Sistema de Gestión de Cuentas
