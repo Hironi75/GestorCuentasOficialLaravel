@@ -114,26 +114,26 @@
                     <form id="form-crud">
                         <h3 id="modal-title">Agregar Cuenta</h3>
                         <label>ID Cliente
-                            <input type="text" id="crud-id_cliente" required>
+                                <input type="text" id="crud-id_cliente" required>
                         </label>
-                        <label>Correo Electrónico
-                            <input type="email" id="crud-Correo_Electronico" required>
-                        </label>
-                        <label>Password
-                            <input type="text" id="crud-Password" required>
-                        </label>
-                        <label>Nombre
-                            <input type="text" id="crud-nombre" required>
-                        </label>
-                        <label>Concepto
-                            <input type="text" id="crud-Concepto" required>
-                        </label>
-                        <label>Fecha Inicio
-                            <input type="date" id="crud-Fecha_Inicio" required>
-                        </label>
-                        <label>Fecha Fin
-                            <input type="date" id="crud-Fecha_Fin" required>
-                        </label>
+                            <label>Correo Electrónico
+                                <input type="email" id="crud-Correo_Electronico">
+                            </label>
+                            <label>Password
+                                <input type="text" id="crud-Password">
+                            </label>
+                            <label>Nombre
+                                <input type="text" id="crud-nombre">
+                            </label>
+                            <label>Concepto
+                                <input type="text" id="crud-Concepto">
+                            </label>
+                            <label>Fecha Inicio
+                                <input type="date" id="crud-Fecha_Inicio">
+                            </label>
+                            <label>Fecha Fin
+                                <input type="date" id="crud-Fecha_Fin">
+                            </label>
                         <label>Saldo Pagar (Bs)
                             <input type="number" step="0.01" id="crud-SaldoPagar" required readonly>
                         </label>

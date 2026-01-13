@@ -20,16 +20,16 @@ class ClienteController extends Controller
     {
         $rules = [
             'gestion_id' => 'nullable|exists:gestiones,id',
-            'Correo_Electronico' => 'required|string',
-            'Password' => 'required|string',
-            'nombre' => 'required|string',
+            'Correo_Electronico' => 'nullable|string',
+            'Password' => 'nullable|string',
+            'nombre' => 'nullable|string',
             'celular' => 'nullable|string',
-            'Fecha_Inicio' => 'required|date',
+            'Fecha_Inicio' => 'nullable|date',
             'Fecha_Fin' => 'nullable|date',
-            'Concepto' => 'required|string',
-            'SaldoPagar' => 'required|numeric',
+            'Concepto' => 'nullable|string',
+            'SaldoPagar' => 'nullable|numeric',
             'AbonoDeuda' => 'nullable|numeric',
-            'TotalPagar' => 'required|numeric',
+            'TotalPagar' => 'nullable|numeric',
         ];
 
         if (!$isUpdate) {

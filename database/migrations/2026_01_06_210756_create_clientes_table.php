@@ -13,13 +13,13 @@ return new class extends Migration
     {
         Schema::create('clientes', function (Blueprint $table) {
             $table->string('id_cliente')->primary();
-            $table->string('Correo_Electronico');
-            $table->string('Password');
-            $table->string('nombre');
+            $table->string('Correo_Electronico')->nullable();
+            $table->string('Password')->nullable();
+            $table->string('nombre')->nullable();
             $table->string('celular')->nullable();
-            $table->date('Fecha_Inicio');
+            $table->date('Fecha_Inicio')->nullable();
             $table->date('Fecha_Fin')->nullable();
-            $table->string('Concepto');
+            $table->string('Concepto')->nullable();
             $table->decimal('SaldoPagar', 10, 2)->default(0);
             $table->decimal('AbonoDeuda', 10, 2)->nullable()->default(0);
             $table->decimal('TotalPagar', 10, 2)->default(0);
