@@ -28,5 +28,6 @@ Route::middleware('auth.check')->group(function () {
     Route::post('gestiones', [GestionController::class, 'store']);
     Route::get('gestiones/activa', [GestionController::class, 'activa']);
     Route::put('gestiones/{id}/activar', [GestionController::class, 'setActiva']);
+    Route::put('gestiones/{id}', [GestionController::class, 'update']);
     Route::delete('gestiones/{id}', [GestionController::class, 'destroy']);
 });

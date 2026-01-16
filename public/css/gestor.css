@@ -277,29 +277,45 @@ body {
     font-size: 1em;
 }
 .gestor-table td.acciones-btns {
-    min-width: 90px;
-    max-width: 90px;
+    min-width: 140px;
+    max-width: 135px;
     white-space: nowrap;
     overflow: visible;
     text-overflow: initial;
     vertical-align: middle;
+    padding: 6px 8px;
+    text-align: center;
 }
+
+.text-center {
+    text-align: center;
+}
+
 .gestor-table .acciones-btns {
     display: flex;
     flex-direction: row;
-    gap: 4px;
+    gap: 10px;
     justify-content: center;
     align-items: center;
-    min-width: 90px;
+    min-width: 140px;
+    width: 100%;
+    height: 100%;
+    padding: 4px 8px;
 }
 .gestor-table .acciones-btns button {
-    width: 28px;
-    height: 28px;
-    min-width: 28px;
-    min-height: 28px;
-    max-width: 28px;
-    max-height: 28px;
+    width: 34px;
+    height: 34px;
+    min-width: 34px;
+    min-height: 34px;
+    max-width: 34px;
+    max-height: 34px;
     font-size: 1em;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
 }
 
 #modal-crud {
@@ -741,11 +757,15 @@ body {
   cursor: pointer;
   padding: 8px 10px;
   margin: 0 3px;
-  border-radius: 3px;
+  border-radius: 6px;
   transition: opacity var(--transition-fast);
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  width: 36px;
+  height: 36px;
+  min-width: 36px;
+  min-height: 36px;
 }
 
 .btn-ver:hover, .btn-editar:hover, .btn-eliminar:hover {
@@ -768,8 +788,8 @@ body {
 }
 
 .btn-ver svg, .btn-editar svg, .btn-eliminar svg {
-  width: 16px;
-  height: 16px;
+  width: 18px;
+  height: 18px;
 }
 
 /* ==================== RESPONSIVE DESIGN ==================== */
@@ -1171,6 +1191,8 @@ body {
     border-top: 1px solid var(--color-border) !important;
     border-bottom: 1px solid var(--color-border) !important;
     background: #fff;
+    min-width: 140px;
+    text-align: center;
 }
 .gestor-table th.columna-compacta,
 .gestor-table td.columna-compacta {
@@ -1181,3 +1203,119 @@ body {
     padding-left: 4px;
     padding-right: 4px;
 }
+
+
+/* ==================== ESTILOS DE PAGINACIÓN ==================== */
+/* --- Controles de paginación --- */
+.pagination-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 20px;
+    padding: 15px;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+.pagination-links {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+.pagination-btn {
+    padding: 8px 16px;
+    background: #6e7279;
+    color: #fff;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: 500;
+    transition: background 0.3s;
+    cursor: pointer;
+    border: none;
+    display: inline-block;
+}
+.pagination-btn.disabled,
+.pagination-btn[disabled] {
+    background: #dfe6e9;
+    color: #636e72;
+    cursor: not-allowed;
+}
+.pagination-page-input {
+    width: 60px;
+    padding: 8px 10px;
+    border: 2px solid #214282;
+    border-radius: 6px;
+    text-align: center;
+    font-weight: bold;
+    font-size: 14px;
+}
+.pagination-label {
+    color: #2d3436;
+    font-size: 14px;
+}
+.pagination-info {
+    color: #636e72;
+    font-size: 14px;
+}
+.pagination-select {
+    padding: 8px 12px;
+    border: 1px solid #27ae60;
+    border-radius: 6px;
+    background: #fff;
+    cursor: pointer;
+    font-size: 14px;
+}
+.pagination-select-label {
+    color: #2d3436;
+    font-weight: 500;
+}
+/* --- Fin controles de paginación --- */
+
+/* === Colores personalizados para la tabla de cuentas (celeste) === */
+.gestor-table {
+    background: #f4fbfe; /* Celeste muy claro para el fondo general */
+}
+.gestor-table th {
+    background: #5bc0de; /* Celeste para encabezados */
+    color: #fff;         /* Texto blanco en encabezados */
+}
+.gestor-table tr:nth-child(even) {
+    background: #e0f7fa; /* Celeste claro para filas pares */
+}
+.gestor-table tr:nth-child(odd) {
+    background: #fff;    /* Blanco para filas impares */
+}
+/* === Fin colores personalizados tabla celeste === */
+
+/* Centrar y alinear los botones de acciones en la columna de la tabla */
+.acciones-btns {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px; /* Espacio entre botones */
+    padding: 6px 10px !important;
+}
+
+.acciones-btns button {
+    margin: 0;
+    border-radius: 8px;
+    border: none;
+    box-shadow: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+}
+
+/* Elimina cualquier borde de la celda de acciones */
+.gestor-table td.acciones-btns, .gestor-table th.acciones-btns {
+    text-align: center;
+}
+
+/* Si los íconos son SVG o font-awesome, asegúrate que no tengan margin extra */
+.acciones-btns svg, .acciones-btns i {
+    margin: 0;
+    padding: 0;
+}
+

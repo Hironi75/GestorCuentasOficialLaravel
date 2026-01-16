@@ -1,9 +1,9 @@
 // Gestor de Cuentas - JavaScript Optimizado
 window.addEventListener('DOMContentLoaded', function() {
     // ==================== CONSTANTES ====================
-    const MESES = ['ENERO', 'FEBRERO', 'MARZO', 'ABRIL', 'MAYO', 'JUNIO', 
+    const MESES = ['ENERO', 'FEBRERO', 'MARZO', 'ABRIL', 'MAYO', 'JUNIO',
                    'JULIO', 'AGOSTO', 'SEPTIEMBRE', 'OCTUBRE', 'NOVIEMBRE', 'DICIEMBRE'];
-    
+
     const ICONOS = {
         ver: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
                 <path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8zM1.173 8a13.133 13.133 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5c2.12 0 3.879 1.168 5.168 2.457A13.133 13.133 0 0 1 14.828 8c-.058.087-.122.183-.195.288-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5c-2.12 0-3.879-1.168-5.168-2.457A13.134 13.134 0 0 1 1.172 8z"/>
@@ -69,13 +69,13 @@ window.addEventListener('DOMContentLoaded', function() {
 
     // ==================== UTILIDADES ====================
     const getCSRFToken = () => document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-    
+
     const formatearNumero = (num) => num % 1 === 0 ? num : num.toFixed(2);
-    
+
     const capitalizarMes = (mes) => mes.charAt(0) + mes.slice(1).toLowerCase();
-    
+
     const getElementValue = (id) => document.getElementById(id)?.value || '';
-    
+
     const setElementValue = (id, value) => {
         const el = document.getElementById(id);
         if (el) el.value = value !== undefined && value !== null ? value : '';
@@ -89,7 +89,7 @@ window.addEventListener('DOMContentLoaded', function() {
 
     function mostrarConfirmacionEliminar(id, nombreCliente) {
         idClienteEliminar = id;
-        document.getElementById('confirmar-message').textContent = 
+        document.getElementById('confirmar-message').textContent =
             `¿Está seguro que desea eliminar al cliente "${nombreCliente}"?`;
         elementos.modalConfirmar.style.display = 'flex';
     }
@@ -112,15 +112,15 @@ window.addEventListener('DOMContentLoaded', function() {
     // Verificar si hay cambios en el formulario (solo en modo edición)
     function verificarCambios() {
         if (!modoEdicion) return;
-        
+
         const camposComparar = [
-            'crud-Correo_Electronico', 'crud-Password', 'crud-nombre', 
-            'crud-celular', 'crud-Fecha_Inicio', 'crud-Fecha_Fin', 
+            'crud-Correo_Electronico', 'crud-Password', 'crud-nombre',
+            'crud-celular', 'crud-Fecha_Inicio', 'crud-Fecha_Fin',
             'crud-Concepto', 'crud-AbonoDeuda'
         ];
-        
+
         let hayCambios = false;
-        
+
         // Comparar campos principales
         for (const campo of camposComparar) {
             const valorActual = getElementValue(campo);
@@ -130,7 +130,7 @@ window.addEventListener('DOMContentLoaded', function() {
                 break;
             }
         }
-        
+
         // Comparar meses si no hay cambios aún
         if (!hayCambios) {
             for (const mes of MESES) {
@@ -138,14 +138,14 @@ window.addEventListener('DOMContentLoaded', function() {
                 const montoOriginal = datosOriginales['mes-' + mes.toLowerCase() + '-monto'] || '';
                 const conceptoActual = getElementValue('mes-' + mes.toLowerCase() + '-concepto');
                 const conceptoOriginal = datosOriginales['mes-' + mes.toLowerCase() + '-concepto'] || '';
-                
+
                 if (montoActual !== montoOriginal || conceptoActual !== conceptoOriginal) {
                     hayCambios = true;
                     break;
                 }
             }
         }
-        
+
         if (elementos.btnGuardar) {
             elementos.btnGuardar.disabled = !hayCambios;
         }
@@ -174,21 +174,21 @@ window.addEventListener('DOMContentLoaded', function() {
             resetearFormulario();
         });
     }
-    
+
     // Cerrar modal Ver
     if (elementos.btnCerrarVer && elementos.modalVer) {
         elementos.btnCerrarVer.addEventListener('click', function() {
             elementos.modalVer.style.display = 'none';
         });
     }
-    
+
     // Cerrar modal Advertencia
     if (elementos.btnCerrarAdvertencia && elementos.modalAdvertencia) {
         elementos.btnCerrarAdvertencia.addEventListener('click', function() {
             elementos.modalAdvertencia.style.display = 'none';
         });
     }
-    
+
     window.onclick = function(event) {
         if (event.target === elementos.modalVer) {
             elementos.modalVer.style.display = 'none';
@@ -207,132 +207,14 @@ window.addEventListener('DOMContentLoaded', function() {
         return fetch(url, { ...defaultOptions, ...options });
     };
 
-    // ==================== RENDERIZAR CLIENTES ====================
-    function renderizarClientes(clientes) {
-        elementos.tablaCuentas.innerHTML = '';
-        
-        if (clientes.length === 0) {
-            const tr = document.createElement('tr');
-            tr.innerHTML = `<td colspan="11" style="text-align:center; padding:20px; color:#7f8c8d; font-style:italic;">No se encontraron coincidencias</td>`;
-            elementos.tablaCuentas.appendChild(tr);
-            return;
-        }
-        
-        const hoy = new Date();
-        hoy.setHours(0, 0, 0, 0);
-        
-        clientes.forEach(cliente => {
-            const tr = document.createElement('tr');
-            let simboloDeuda = '';
-            
-            // Calcular días restantes y aplicar color
-            if (cliente.Fecha_Fin) {
-                const fechaFin = new Date(cliente.Fecha_Fin);
-                const diffTime = fechaFin - hoy;
-                const diasRestantes = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                
-                // Si pasaron más de 30 días de vencido
-                if (diasRestantes < -30) {
-                    tr.style.backgroundColor = '#f5c6cb'; // Rosa más intenso
-                    tr.style.color = '#721c24';
-                    simboloDeuda = ' 🚨';
-                } else if (diasRestantes < 0) {
-                    tr.style.backgroundColor = '#f8d7da'; // Rosa pastel - Vencido
-                    tr.style.color = '#721c24';
-                } else if (diasRestantes <= 3) {
-                    tr.style.backgroundColor = '#f8d7da'; // Rosa pastel - Urgente
-                    tr.style.color = '#721c24';
-                } else if (diasRestantes <= 5) {
-                    tr.style.backgroundColor = '#ffe5cc'; // Naranja pastel - Próximo
-                    tr.style.color = '#856404';
-                } else if (diasRestantes <= 8) {
-                    tr.style.backgroundColor = '#fff9db'; // Amarillo pastel - Atención
-                    tr.style.color = '#856404';
-                }
-            }
-            tr.innerHTML = `
-                <td>${cliente.id_cliente || cliente.id}${simboloDeuda}</td>
-                <td>${cliente.Correo_Electronico || ''}</td>
-                <td>${cliente.Password || ''}</td>
-                <td>${cliente.nombre || ''}</td>
-                <td>${cliente.Fecha_Inicio || ''}</td>
-                <td>${cliente.Fecha_Fin || ''}</td>
-                <td>${cliente.Concepto || ''}</td>
-                <td>${cliente.SaldoPagar || ''}</td>
-                <td>${cliente.AbonoDeuda || ''}</td>
-                <td>${cliente.TotalPagar || ''}</td>
-                <td>
-                    <button class="btn-ver" data-id="${cliente.id_cliente}" title="Ver">${ICONOS.ver}</button>
-                    <button class="btn-editar" data-id="${cliente.id_cliente}" title="Editar">${ICONOS.editar}</button>
-                    <button class="btn-eliminar" data-id="${cliente.id_cliente}" title="Eliminar">${ICONOS.eliminar}</button>
-                </td>
-            `;
-            elementos.tablaCuentas.appendChild(tr);
-        });
-    }
+    // La función renderizarClientes() ya no se necesita porque la tabla se renderiza en el servidor
 
-    // ==================== FILTRAR CLIENTES ====================
-    function filtrarClientes() {
-        const campo = elementos.filtroCampo.value;
-        const busqueda = elementos.filtroCuentas.value.toLowerCase().trim();
-        const dias = elementos.filtroDias.value;
-        
-        let clientesFiltrados = clientesData;
-        
-        // Filtrar por campo de búsqueda
-        if (busqueda) {
-            clientesFiltrados = clientesFiltrados.filter(cliente => {
-                switch (campo) {
-                    case 'id':
-                        return (cliente.id_cliente || '').toString().toLowerCase().includes(busqueda);
-                    case 'nombre':
-                        return (cliente.nombre || '').toLowerCase().includes(busqueda);
-                    case 'correo':
-                        return (cliente.Correo_Electronico || '').toLowerCase().includes(busqueda);
-                    default:
-                        return true;
-                }
-            });
-        }
-        
-        // Filtrar por días restantes hasta Fecha_Fin
-        if (dias !== 'todos') {
-            const diasLimite = parseInt(dias);
-            const hoy = new Date();
-            hoy.setHours(0, 0, 0, 0);
-            
-            clientesFiltrados = clientesFiltrados.filter(cliente => {
-                if (!cliente.Fecha_Fin) return false;
-                const fechaFin = new Date(cliente.Fecha_Fin);
-                const diffTime = fechaFin - hoy;
-                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                return diffDays >= 0 && diffDays <= diasLimite;
-            });
-        }
-        
-        renderizarClientes(clientesFiltrados);
-    }
-
-    // ==================== FILTRAR DEUDORES ====================
-    function filtrarDeudores() {
-        const hoy = new Date();
-        hoy.setHours(0, 0, 0, 0);
-        
-        const deudores = clientesData.filter(cliente => {
-            if (!cliente.Fecha_Fin) return false;
-            const fechaFin = new Date(cliente.Fecha_Fin);
-            const diffTime = fechaFin - hoy;
-            const diasVencidos = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-            // Mostrar solo los que tienen más de 5 días vencidos (diasVencidos < -5)
-            return diasVencidos < -5;
-        });
-        
-        renderizarClientes(deudores);
-    }
+    // Las funciones de filtrado (filtrarClientes, filtrarDeudores, renderizarClientes)
+    // ya no se necesitan porque los filtros se manejan en el backend de Laravel
 
     // ==================== GESTIONES ====================
     function mostrarGestionActivaRapido() {
-        fetch('/gestiones')
+        fetch('/api/gestiones')
             .then(res => res.json())
             .then(gestiones => {
                 const activa = gestiones.find(g => g.activa);
@@ -340,13 +222,16 @@ window.addEventListener('DOMContentLoaded', function() {
                 if (label && activa) {
                     label.textContent = activa.nombre || `Gestión ${activa.anio}`;
                 }
+            })
+            .catch(err => {
+                console.error('Error al cargar gestiones:', err);
             });
     }
     // Mostrar gestión activa lo antes posible
     mostrarGestionActivaRapido();
-    
+
     function cargarGestiones() {
-        fetch('/gestiones')
+        fetch('/api/gestiones')
             .then(res => res.json())
             .then(gestiones => {
                 const activa = gestiones.find(g => g.activa);
@@ -355,37 +240,15 @@ window.addEventListener('DOMContentLoaded', function() {
                     label.textContent = activa.nombre || `Gestión ${activa.anio}`;
                     gestionActual = activa.id;
                 }
-                // Cargar clientes después de obtener la gestión activa
-                cargarClientes();
+            })
+            .catch(err => {
+                console.error('Error al cargar gestiones:', err);
             });
     }
     cargarGestiones();
-    
-    // ==================== CARGAR CLIENTES ====================
-    function cargarClientes() {
-        if (!gestionActual) {
-            // Si aún no hay gestión activa, esperar
-            return;
-        }
-        const url = `/api/clientes?gestion_id=${gestionActual}`;
-        
-        apiRequest(url)
-            .then(res => res.json())
-            .then(clientes => {
-                clientesData = clientes; // Guardar para filtrado
-                if (mostrandoDeudores) {
-                    filtrarDeudores();
-                } else {
-                    filtrarClientes();
-                }
-            })
-            .catch(err => {
-                console.error('Error al cargar clientes:', err);
-            });
-    }
 
-        // Refuerzo: los filtros siempre operan sobre clientesData, que solo contiene los clientes de la gestión seleccionada
-        // No se mezclan datos de gestiones diferentes
+    // La función cargarClientes() ya no se necesita porque los clientes
+    // se cargan y filtran directamente en el servidor con Laravel
 
     // Event listener para nueva gestión
     if (elementos.btnNuevaGestion) {
@@ -407,7 +270,7 @@ window.addEventListener('DOMContentLoaded', function() {
             e.preventDefault();
             const anio = document.getElementById('gestion-anio').value;
             const nombre = document.getElementById('gestion-nombre').value || `Gestión ${anio}`;
-            
+
             apiRequest('/api/gestiones', {
                 method: 'POST',
                 body: JSON.stringify({ anio, nombre })
@@ -428,46 +291,9 @@ window.addEventListener('DOMContentLoaded', function() {
             });
         });
     }
-    
-    // Event listeners para filtros
-    if (elementos.filtroCampo) {
-        elementos.filtroCampo.addEventListener('change', () => {
-            mostrandoDeudores = false;
-            elementos.btnDeudores.textContent = 'Deudores';
-            filtrarClientes();
-        });
-    }
-    if (elementos.filtroCuentas) {
-        elementos.filtroCuentas.addEventListener('input', () => {
-            mostrandoDeudores = false;
-            elementos.btnDeudores.textContent = 'Deudores';
-            filtrarClientes();
-        });
-    }
-    if (elementos.filtroDias) {
-        elementos.filtroDias.addEventListener('change', () => {
-            mostrandoDeudores = false;
-            elementos.btnDeudores.textContent = 'Deudores';
-            filtrarClientes();
-        });
-    }
-    
-    // Event listener para botón Deudores
-    if (elementos.btnDeudores) {
-        elementos.btnDeudores.addEventListener('click', () => {
-            mostrandoDeudores = !mostrandoDeudores;
-            if (mostrandoDeudores) {
-                elementos.btnDeudores.textContent = 'Ver Todos';
-                // Limpiar filtros
-                elementos.filtroCuentas.value = '';
-                elementos.filtroDias.value = 'todos';
-                filtrarDeudores();
-            } else {
-                elementos.btnDeudores.textContent = 'Deudores';
-                filtrarClientes();
-            }
-        });
-    }
+
+    // Los filtros ahora se manejan en el backend (Laravel), no se necesita JavaScript para filtrar
+
 
     // ==================== CALCULAR SALDOS ====================
     function calcularSaldos() {
@@ -480,7 +306,7 @@ window.addEventListener('DOMContentLoaded', function() {
         const abono = parseFloat(getElementValue('crud-AbonoDeuda') || 0);
         const total = suma - (isNaN(abono) ? 0 : abono);
         setElementValue('crud-TotalPagar', formatearNumero(total));
-        
+
         // Verificar cambios después de calcular saldos
         verificarCambios();
     }
@@ -493,10 +319,10 @@ window.addEventListener('DOMContentLoaded', function() {
         if (inputConcepto) inputConcepto.addEventListener('input', verificarCambios);
     });
     if (elementos.abonoInput) elementos.abonoInput.addEventListener('input', calcularSaldos);
-    
+
     // Escuchar cambios en todos los campos del formulario para verificar cambios
     const camposFormulario = [
-        'crud-Correo_Electronico', 'crud-Password', 'crud-nombre', 
+        'crud-Correo_Electronico', 'crud-Password', 'crud-nombre',
         'crud-celular', 'crud-Fecha_Inicio', 'crud-Fecha_Fin', 'crud-Concepto'
     ];
     camposFormulario.forEach(campoId => {
@@ -509,7 +335,7 @@ window.addEventListener('DOMContentLoaded', function() {
         elementos.formCrud.addEventListener('submit', function(e) {
             e.preventDefault();
             calcularSaldos();
-            
+
             const data = {
                 id_cliente: getElementValue('crud-id_cliente'),
                 Correo_Electronico: getElementValue('crud-Correo_Electronico'),
@@ -528,16 +354,16 @@ window.addEventListener('DOMContentLoaded', function() {
                 if (elementos.selectGestion && elementos.selectGestion.value) {
                     data.gestion_id = elementos.selectGestion.value;
                 }
-            
+
             // Meses y conceptos
             MESES.forEach(mes => {
                 data[mes] = getElementValue('mes-' + mes.toLowerCase() + '-monto');
                 data[mes + '_CONCEPTO'] = getElementValue('mes-' + mes.toLowerCase() + '-concepto');
             });
-            
+
             const url = modoEdicion ? `/api/clientes/${idClienteEdicion}` : '/api/clientes';
             const method = modoEdicion ? 'PUT' : 'POST';
-            
+
             apiRequest(url, {
                 method: method,
                 body: JSON.stringify(data)
@@ -551,7 +377,8 @@ window.addEventListener('DOMContentLoaded', function() {
             .then(() => {
                 elementos.modalCrud.style.display = 'none';
                 resetearFormulario();
-                cargarClientes();
+                // Recargar la página para mostrar los cambios
+                window.location.reload();
             })
             .catch(error => {
                 if (error.errors && error.errors.id_cliente) {
@@ -570,7 +397,7 @@ window.addEventListener('DOMContentLoaded', function() {
         elementos.tablaCuentas.addEventListener('click', function(e) {
             const target = e.target.closest('button');
             if (!target) return;
-            
+
             const id = target.dataset.id;
 
             // Ver detalles del cliente
@@ -582,7 +409,7 @@ window.addEventListener('DOMContentLoaded', function() {
                             mostrarAdvertencia('Error al cargar los datos del cliente.');
                             return;
                         }
-                        
+
                         let mesesHTML = '';
                         MESES.forEach(mes => {
                             const monto = cliente[mes] || '';
@@ -597,7 +424,7 @@ window.addEventListener('DOMContentLoaded', function() {
                                 `;
                             }
                         });
-                        
+
                         document.getElementById('modal-ver-body').innerHTML = `
                             <h3 style="text-align: center; margin: 0 0 20px 0; color: #2c3e50;">Detalle de Cuenta</h3>
                             <div class="info-row">
@@ -670,11 +497,11 @@ window.addEventListener('DOMContentLoaded', function() {
                             mostrarAdvertencia('Error al cargar los datos del cliente.');
                             return;
                         }
-                        
+
                         modoEdicion = true;
                         idClienteEdicion = cliente.id_cliente;
                         elementos.modalTitle.textContent = 'Editar Cuenta';
-                        
+
                         // Cargar datos en el formulario
                         setElementValue('crud-id_cliente', cliente.id_cliente);
                         document.getElementById('crud-id_cliente').disabled = true;
@@ -688,13 +515,13 @@ window.addEventListener('DOMContentLoaded', function() {
                         setElementValue('crud-SaldoPagar', cliente.SaldoPagar);
                         setElementValue('crud-AbonoDeuda', cliente.AbonoDeuda || 0);
                         setElementValue('crud-TotalPagar', cliente.TotalPagar);
-                        
+
                         // Cargar meses
                         MESES.forEach(mes => {
                             setElementValue('mes-' + mes.toLowerCase() + '-monto', cliente[mes]);
                             setElementValue('mes-' + mes.toLowerCase() + '-concepto', cliente[mes + '_CONCEPTO']);
                         });
-                        
+
                         // Guardar datos originales para comparar cambios
                         datosOriginales = {
                             'crud-Correo_Electronico': cliente.Correo_Electronico || '',
@@ -706,18 +533,18 @@ window.addEventListener('DOMContentLoaded', function() {
                             'crud-Concepto': cliente.Concepto || '',
                             'crud-AbonoDeuda': String(cliente.AbonoDeuda || 0)
                         };
-                        
+
                         // Guardar meses originales
                         MESES.forEach(mes => {
                             datosOriginales['mes-' + mes.toLowerCase() + '-monto'] = cliente[mes] || '';
                             datosOriginales['mes-' + mes.toLowerCase() + '-concepto'] = cliente[mes + '_CONCEPTO'] || '';
                         });
-                        
+
                         // Deshabilitar botón guardar inicialmente
                         if (elementos.btnGuardar) {
                             elementos.btnGuardar.disabled = true;
                         }
-                        
+
                         elementos.modalCrud.style.display = 'block';
                     })
                     .catch(() => {
@@ -743,7 +570,8 @@ window.addEventListener('DOMContentLoaded', function() {
                     .then(res => res.json())
                     .then(() => {
                         cerrarModalConfirmar();
-                        cargarClientes();
+                        // Recargar la página para mostrar los cambios
+                        window.location.reload();
                     })
                     .catch(() => {
                         cerrarModalConfirmar();
@@ -801,51 +629,62 @@ window.addEventListener('DOMContentLoaded', function() {
     }
 
     // Editar y eliminar gestiones
-    gestionesBody.addEventListener('click', function(e) {
-        const btn = e.target.closest('button');
-        if (!btn) return;
-        const id = btn.dataset.id;
-        if (btn.classList.contains('btn-editar-gestion')) {
-            gestionEditId = id;
-            fetch('/api/gestiones')
-                .then(res => res.json())
-                .then(gestiones => {
-                    const gestion = gestiones.find(g => g.id == id);
-                    if (gestion) {
-                        document.getElementById('editar-gestion-anio').value = gestion.anio;
-                        document.getElementById('modal-editar-gestion').style.display = 'flex';
-                    }
-                });
-        }
-        if (btn.classList.contains('btn-eliminar-gestion')) {
-            if (confirm('¿Seguro que deseas eliminar esta gestión?')) {
-                fetch(`/api/gestiones/${id}`, { method: 'DELETE' })
+    if (gestionesBody) {
+        gestionesBody.addEventListener('click', function(e) {
+            const btn = e.target.closest('button');
+            if (!btn) return;
+            const id = btn.dataset.id;
+            if (btn.classList.contains('btn-editar-gestion')) {
+                gestionEditId = id;
+                fetch('/api/gestiones')
                     .then(res => res.json())
-                    .then(data => {
-                        if (data.success) {
-                            cargarGestionesTabla();
-                        } else {
-                            alert(data.message || 'No se pudo eliminar la gestión');
+                    .then(gestiones => {
+                        const gestion = gestiones.find(g => g.id == id);
+                        if (gestion) {
+                            document.getElementById('editar-gestion-anio').value = gestion.anio;
+                            document.getElementById('modal-editar-gestion').style.display = 'flex';
                         }
                     });
             }
-        }
-    });
-    document.getElementById('form-editar-gestion').addEventListener('submit', function(e) {
-        e.preventDefault();
-        const anio = document.getElementById('editar-gestion-anio').value;
-        fetch(`/api/gestiones/${gestionEditId}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ anio })
-        })
-        .then(res => res.json())
-        .then(data => {
-            document.getElementById('modal-editar-gestion').style.display = 'none';
-            cargarGestionesTabla();
+            if (btn.classList.contains('btn-eliminar-gestion')) {
+                if (confirm('¿Seguro que deseas eliminar esta gestión?')) {
+                    fetch(`/api/gestiones/${id}`, { method: 'DELETE' })
+                        .then(res => res.json())
+                        .then(data => {
+                            if (data.success) {
+                                cargarGestionesTabla();
+                            } else {
+                                alert(data.message || 'No se pudo eliminar la gestión');
+                            }
+                        });
+                }
+            }
         });
-    });
-    document.getElementById('btn-cancelar-editar-gestion').addEventListener('click', function() {
-        document.getElementById('modal-editar-gestion').style.display = 'none';
-    });
+    }
+
+    const formEditarGestion = document.getElementById('form-editar-gestion');
+    const btnCancelarEditarGestion = document.getElementById('btn-cancelar-editar-gestion');
+
+    if (formEditarGestion) {
+        formEditarGestion.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const anio = document.getElementById('editar-gestion-anio').value;
+            fetch(`/api/gestiones/${gestionEditId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': getCSRFToken() },
+                body: JSON.stringify({ anio })
+            })
+            .then(res => res.json())
+            .then(data => {
+                document.getElementById('modal-editar-gestion').style.display = 'none';
+                cargarGestionesTabla();
+            });
+        });
+    }
+
+    if (btnCancelarEditarGestion) {
+        btnCancelarEditarGestion.addEventListener('click', function() {
+            document.getElementById('modal-editar-gestion').style.display = 'none';
+        });
+    }
 });

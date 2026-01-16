@@ -15,27 +15,99 @@
         @include('gestor.header')
         <main class="gestor-main">
             <section class="gestor-section">
-                <div class="gestor-toolbar">
-                    <h2 style="margin:0; color:#2d3436; font-size:1.5rem;">Listado de Cuentas <span id="gestion-actual-label" style="font-size:0.9rem; color:#7f8c8d;"></span></h2>
-                    <div style="display:flex; gap:8px; align-items:center; min-width:420px; width:100%;">
-                        <select id="filtro-campo">
-                            <option value="id">ID</option>
-                            <option value="nombre">Nombre</option>
-                            <option value="correo">Correo electrónico</option>
+                <h2 style="margin:0; color:#2d3436; font-size:1.5rem;">Listado de Cuentas <span id="gestion-actual-label" style="font-size:0.9rem; color:#7f8c8d;"></span></h2>
+                <!-- Controles de Paginación -->
+                <div class="pagination-container">
+                    <!-- Selector de registros por página -->
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <label for="per-page-select" class="pagination-select-label">Mostrar:</label>
+                        <select id="per-page-select" onchange="window.location.href='{{ route('gestor') }}?per_page=' + this.value" class="pagination-select">
+                            <option value="25" {{ (isset($perPage) && $perPage == 25) || !isset($perPage) ? 'selected' : '' }}>25</option>
+                            <option value="50" {{ isset($perPage) && $perPage == 50 ? 'selected' : '' }}>50</option>
+                            <option value="100" {{ isset($perPage) && $perPage == 100 ? 'selected' : '' }}>100</option>
                         </select>
-                        <input id="filtro-cuentas" type="text" placeholder="Buscar...">
-                        <select id="filtro-dias">
-                            <option value="todos">Todos</option>
-                            <option value="3">3 días o menos</option>
-                            <option value="5">5 días o menos</option>
-                            <option value="6">6 días o menos</option>
-                            <option value="8">8 días o menos</option>
-                        </select>
-                        <div style="margin-left:auto; display:flex; gap:8px;">
-                            <button id="btn-agregar">Agregar</button>
-                            <button id="btn-deudores" class="deudores-btn">Deudores</button>
-                        </div>
+                        <span class="pagination-info">
+                            Mostrando {{ $clientes->firstItem() ?? 0 }} - {{ $clientes->lastItem() ?? 0 }} de {{ $clientes->total() }} registros
+                        </span>
                     </div>
+                    <!-- Enlaces de paginación -->
+                    <div class="pagination-links">
+                        {{-- Botón Anterior --}}
+                        @if ($clientes->onFirstPage())
+                            <span class="pagination-btn disabled">‹ Anterior</span>
+                        @else
+                            <a href="{{ $clientes->previousPageUrl() }}" class="pagination-btn">‹ Anterior</a>
+                        @endif
+                        {{-- Input de página actual --}}
+                        <div style="display:flex; align-items:center; gap:8px;">
+                            <span class="pagination-label">Página</span>
+                            <input
+                                type="number"
+                                id="page-input"
+                                value="{{ $clientes->currentPage() }}"
+                                min="1"
+                                max="{{ $clientes->lastPage() }}"
+                                class="pagination-page-input"
+                                onkeypress="if(event.key === 'Enter') {
+                                    let page = parseInt(this.value);
+                                    let maxPage = {{ $clientes->lastPage() }};
+                                    if(page >= 1 && page <= maxPage) {
+                                        window.location.href = '{{ route('gestor') }}?per_page={{ $perPage ?? 25 }}&page=' + page;
+                                    } else {
+                                        alert('Página debe estar entre 1 y ' + maxPage);
+                                        this.value = {{ $clientes->currentPage() }};
+                                    }
+                                }"
+                            >
+                            <span class="pagination-info">de {{ $clientes->lastPage() }}</span>
+                        </div>
+                        {{-- Botón Siguiente --}}
+                        @if ($clientes->hasMorePages())
+                            <a href="{{ $clientes->nextPageUrl() }}" class="pagination-btn">Siguiente ›</a>
+                        @else
+                            <span class="pagination-btn disabled">Siguiente ›</span>
+                        @endif
+                        {{-- Botón Última Página --}}
+                        @if ($clientes->currentPage() < $clientes->lastPage())
+                            <a href="{{ $clientes->url($clientes->lastPage()) }}" class="pagination-btn">
+                                Última »
+                            </a>
+                        @else
+                            <span class="pagination-btn disabled">Última »</span>
+                        @endif
+                    </div>
+                </div>
+                &nbsp;
+                <div class="gestor-toolbar">
+                    <form method="GET" action="{{ route('gestor') }}" id="form-filtros" style="display:flex; gap:8px; align-items:center; width:100%;">
+                        <!-- Mantener per_page en el formulario -->
+                        <input type="hidden" name="per_page" value="{{ $perPage ?? 25 }}">
+
+                        <select name="filtro_campo" id="filtro-campo" onchange="this.form.submit()">
+                            <option value="id" {{ (isset($filtroCampo) && $filtroCampo == 'id') || !isset($filtroCampo) ? 'selected' : '' }}>ID</option>
+                            <option value="nombre" {{ isset($filtroCampo) && $filtroCampo == 'nombre' ? 'selected' : '' }}>Nombre</option>
+                            <option value="correo" {{ isset($filtroCampo) && $filtroCampo == 'correo' ? 'selected' : '' }}>Correo electrónico</option>
+                        </select>
+
+                        <input name="filtro_busqueda" id="filtro-cuentas" type="text" placeholder="Buscar..." value="{{ $filtroBusqueda ?? '' }}">
+
+                        <select name="filtro_dias" id="filtro-dias" onchange="this.form.submit()">
+                            <option value="todos" {{ (isset($filtroDias) && $filtroDias == 'todos') || !isset($filtroDias) ? 'selected' : '' }}>Todos</option>
+                            <option value="3" {{ isset($filtroDias) && $filtroDias == '3' ? 'selected' : '' }}>3 días o menos</option>
+                            <option value="5" {{ isset($filtroDias) && $filtroDias == '5' ? 'selected' : '' }}>5 días o menos</option>
+                            <option value="6" {{ isset($filtroDias) && $filtroDias == '6' ? 'selected' : '' }}>6 días o menos</option>
+                            <option value="8" {{ isset($filtroDias) && $filtroDias == '8' ? 'selected' : '' }}>8 días o menos</option>
+                        </select>
+
+                        <div style="margin-left:auto; display:flex; gap:8px;">
+                            <button type="button" id="btn-agregar">Agregar</button>
+                            <a href="{{ route('gestor') }}?per_page={{ $perPage ?? 25 }}&deudores=1"
+                               class="deudores-btn"
+                               style="background: #e74c3c; color: #fff; padding: 10px 22px; border-radius: 4px; text-decoration: none; display: inline-block; border: none; cursor: pointer; font-size: 1rem;">
+                                {{ isset($deudores) && $deudores ? 'Ver Todos' : 'Deudores' }}
+                            </a>
+                        </div>
+                    </form>
                 </div>
                 <div class="gestor-table-container">
                     <table id="tabla-cuentas-table" class="gestor-table">
@@ -56,39 +128,79 @@
                         </thead>
                         <tbody id="tabla-cuentas">
                             <!-- Filas dinámicas -->
-                            @foreach($clientes as $cliente)
-                                <tr>
-                                    <td>{{ $cliente->id_cliente }}</td>
-                                    <td>{{ $cliente->Correo_Electronico }}</td>
-                                    <td>{{ $cliente->Password }}</td>
-                                    <td>{{ $cliente->nombre }}</td>
-                                    <td>{{ $cliente->Fecha_Inicio }}</td>
-                                    <td>{{ $cliente->Fecha_Fin }}</td>
-                                    <td>{{ $cliente->Concepto }}</td>
-                                    <td style="text-align: center">{{ $cliente->SaldoPagar }}</td>
-                                    <td style="text-align: center">{{ $cliente->AbonoDeuda }}</td>
-                                    <td style="text-align: center">{{ $cliente->TotalPagar }}</td>
-                                    <td class="acciones-btns" style="display: flex; flex-direction: row; gap: 6px; align-items: center; justify-content: center; min-width: 130px;">
-                                        <!-- Botón Ver -->
-                                        <button title="Ver" class="btn-ver" data-id="{{ $cliente->id_cliente }}" style="background:#5bc0de;color:#fff;width:36px;height:36px;display:flex;align-items:center;justify-content:center;border-radius:6px;border:none;padding:0;">
-                                            <span style="font-size:1.4em;line-height:1;">&#128065;</span>
-                                        </button>
-                                        <!-- Botón Editar -->
-                                        <button title="Editar" class="btn-editar" data-id="{{ $cliente->id_cliente }}" style="background:#f39c12;color:#fff;width:36px;height:36px;display:flex;align-items:center;justify-content:center;border-radius:6px;border:none;padding:0;">
-                                            <span style="font-size:1.4em;line-height:1;">&#9998;</span>
-                                        </button>
-                                        <!-- Botón Eliminar -->
-                                        <button title="Eliminar" class="btn-eliminar" data-id="{{ $cliente->id_cliente }}" style="background:#e74c3c;color:#fff;width:36px;height:36px;display:flex;align-items:center;justify-content:center;border-radius:6px;border:none;padding:0;">
-                                            <span style="font-size:1.4em;line-height:1;">&#128465;</span>
-                                        </button>
-                                    </td>
+                            @if($clientes->count() > 0)
+                                @foreach($clientes as $cliente)
+                                    @php
+                                        $estilo = '';
+                                        $simboloDeuda = '';
 
-                                    <!-- Más columnas si lo necesitas -->
+                                        if ($cliente->Fecha_Fin) {
+                                            $hoy = \Carbon\Carbon::now()->startOfDay();
+                                            $fechaFin = \Carbon\Carbon::parse($cliente->Fecha_Fin);
+                                            $diasRestantes = $hoy->diffInDays($fechaFin, false);
+
+                                            // Más de 30 días vencido
+                                            if ($diasRestantes < -30) {
+                                                $estilo = 'background-color: #f5c6cb; color: #721c24;';
+                                                $simboloDeuda = ' 🚨';
+                                            }
+                                            // Vencido (menos de 0 días)
+                                            elseif ($diasRestantes < 0) {
+                                                $estilo = 'background-color: #f8d7da; color: #721c24;';
+                                            }
+                                            // 3 días o menos (urgente)
+                                            elseif ($diasRestantes <= 3) {
+                                                $estilo = 'background-color: #f8d7da; color: #721c24;';
+                                            }
+                                            // 5 días o menos (próximo)
+                                            elseif ($diasRestantes <= 5) {
+                                                $estilo = 'background-color: #ffe5cc; color: #856404;';
+                                            }
+                                            // 8 días o menos (atención)
+                                            elseif ($diasRestantes <= 8) {
+                                                $estilo = 'background-color: #fff9db; color: #856404;';
+                                            }
+                                        }
+                                    @endphp
+                                    <tr style="{{ $estilo }}">
+                                        <td class="text-center">{{ $cliente->id_cliente }}{{ $simboloDeuda }}</td>
+                                        <td>{{ $cliente->Correo_Electronico }}</td>
+                                        <td>{{ $cliente->Password }}</td>
+                                        <td>{{ $cliente->nombre }}</td>
+                                        <td class="text-center">{{ $cliente->Fecha_Inicio }}</td>
+                                        <td class="text-center">{{ $cliente->Fecha_Fin }}</td>
+                                        <td>{{ $cliente->Concepto }}</td>
+                                        <td class="text-center">{{ $cliente->SaldoPagar }}</td>
+                                        <td class="text-center">{{ $cliente->AbonoDeuda }}</td>
+                                        <td class="text-center">{{ $cliente->TotalPagar }}</td>
+                                        <td class="acciones-btns">
+                                            <!-- Botón Ver -->
+                                            <button title="Ver" class="btn-ver" data-id="{{ $cliente->id_cliente }}">
+                                                <span style="font-size:1.4em;line-height:1;">&#128065;</span>
+                                            </button>
+                                            <!-- Botón Editar -->
+                                            <button title="Editar" class="btn-editar" data-id="{{ $cliente->id_cliente }}">
+                                                <span style="font-size:1.4em;line-height:1;">&#9998;</span>
+                                            </button>
+                                            <!-- Botón Eliminar -->
+                                            <button title="Eliminar" class="btn-eliminar" data-id="{{ $cliente->id_cliente }}">
+                                                <span style="font-size:1.4em;line-height:1;">&#128465;</span>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            @else
+                                <tr>
+                                    <td colspan="11" style="text-align:center; padding:20px; color:#7f8c8d; font-style:italic;">
+                                        No se encontraron coincidencias
+                                    </td>
                                 </tr>
-                            @endforeach
+                            @endif
                         </tbody>
                     </table>
                 </div>
+
+
             </section>
             <!-- Modal de confirmación eliminar -->
             <div id="modal-confirmar" style="display:none;">
@@ -269,7 +381,38 @@
     <!-- Modal Cuenta (Gestiones) eliminado, ahora la edición se hará en la vista cuenta -->
     </main>
     </div>
-    <script src="script.js"></script>
+
+    <script>
+        // Filtro automático en tiempo real para el input de búsqueda
+        document.addEventListener('DOMContentLoaded', function() {
+            const inputBusqueda = document.getElementById('filtro-cuentas');
+            const formFiltros = document.getElementById('form-filtros');
+
+            if (inputBusqueda && formFiltros) {
+                let timeoutId;
+
+                inputBusqueda.addEventListener('input', function() {
+                    // Limpiar el timeout anterior
+                    clearTimeout(timeoutId);
+
+                    // Esperar 500ms después de que el usuario deje de escribir
+                    timeoutId = setTimeout(() => {
+                        formFiltros.submit();
+                    }, 500);
+                });
+
+                // Si el usuario presiona Enter, enviar inmediatamente
+                inputBusqueda.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        clearTimeout(timeoutId);
+                        formFiltros.submit();
+                    }
+                });
+            }
+        });
+    </script>
+
     <script src="{{ asset('js/gestor.js') }}"></script>
     <script src="{{ asset('js/no-back.js') }}"></script>
 </body>
