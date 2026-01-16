@@ -12,23 +12,7 @@
 
 <body>
     <div class="gestor-main-container">
-        <header class="gestor-header">
-            <h1>Gestor de Cuentas</h1>
-            <nav class="nav-tabs">
-                <a href="/cuenta" class="nav-tab">Cuenta</a>
-                <a href="/gestor" class="nav-tab active">Gestor</a>
-            </nav>
-            <div class="gestion-selector">
-                <span id="gestion-activa-label" class="gestion-badge"></span>
-            </div>
-            <div class="user-info">
-
-                <form method="POST" action="{{ route('logout') }}" style="margin:0;">
-                    @csrf
-                    <button type="submit" class="logout-btn">Cerrar sesión</button>
-                </form>
-            </div>
-        </header>
+        @include('gestor.header')
         <main class="gestor-main">
             <section class="gestor-section">
                 <div class="gestor-toolbar">
@@ -64,14 +48,44 @@
                                 <th>Fecha Inicio</th>
                                 <th>Fecha Fin</th>
                                 <th>Concepto</th>
-                                <th>Saldo Pagar</th>
-                                <th style="border:1px solid #b2bec3; padding:8px;">Abono Deuda</th>
-                                <th style="border:1px solid #b2bec3; padding:8px;">Total Pagar</th>
+                                <th class="columna-compacta">Saldo Pagar</th>
+                                <th class="columna-compacta" style="border:1px solid #b2bec3; padding:8px;" >Abono Deuda</th>
+                                <th class="columna-compacta" style="border:1px solid #b2bec3; padding:8px;">Total Pagar</th>
                                 <th style="border:1px solid #b2bec3; padding:8px;">Acciones</th>
                             </tr>
                         </thead>
                         <tbody id="tabla-cuentas">
                             <!-- Filas dinámicas -->
+                            @foreach($clientes as $cliente)
+                                <tr>
+                                    <td>{{ $cliente->id_cliente }}</td>
+                                    <td>{{ $cliente->Correo_Electronico }}</td>
+                                    <td>{{ $cliente->Password }}</td>
+                                    <td>{{ $cliente->nombre }}</td>
+                                    <td>{{ $cliente->Fecha_Inicio }}</td>
+                                    <td>{{ $cliente->Fecha_Fin }}</td>
+                                    <td>{{ $cliente->Concepto }}</td>
+                                    <td style="text-align: center">{{ $cliente->SaldoPagar }}</td>
+                                    <td style="text-align: center">{{ $cliente->AbonoDeuda }}</td>
+                                    <td style="text-align: center">{{ $cliente->TotalPagar }}</td>
+                                    <td class="acciones-btns" style="display: flex; flex-direction: row; gap: 6px; align-items: center; justify-content: center; min-width: 130px;">
+                                        <!-- Botón Ver -->
+                                        <button title="Ver" class="btn-ver" data-id="{{ $cliente->id_cliente }}" style="background:#5bc0de;color:#fff;width:36px;height:36px;display:flex;align-items:center;justify-content:center;border-radius:6px;border:none;padding:0;">
+                                            <span style="font-size:1.4em;line-height:1;">&#128065;</span>
+                                        </button>
+                                        <!-- Botón Editar -->
+                                        <button title="Editar" class="btn-editar" data-id="{{ $cliente->id_cliente }}" style="background:#f39c12;color:#fff;width:36px;height:36px;display:flex;align-items:center;justify-content:center;border-radius:6px;border:none;padding:0;">
+                                            <span style="font-size:1.4em;line-height:1;">&#9998;</span>
+                                        </button>
+                                        <!-- Botón Eliminar -->
+                                        <button title="Eliminar" class="btn-eliminar" data-id="{{ $cliente->id_cliente }}" style="background:#e74c3c;color:#fff;width:36px;height:36px;display:flex;align-items:center;justify-content:center;border-radius:6px;border:none;padding:0;">
+                                            <span style="font-size:1.4em;line-height:1;">&#128465;</span>
+                                        </button>
+                                    </td>
+
+                                    <!-- Más columnas si lo necesitas -->
+                                </tr>
+                            @endforeach
                         </tbody>
                     </table>
                 </div>
@@ -229,8 +243,8 @@
                     </form>
                 </div>
             </div>
-    </div>
-    
+
+
     <!-- Modal Nueva Gestión -->
     <div id="modal-gestion" class="modal" style="display:none;">
         <div class="modal-content" style="max-width:400px;">

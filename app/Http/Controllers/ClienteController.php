@@ -20,16 +20,16 @@ class ClienteController extends Controller
     {
         $rules = [
             'gestion_id' => 'nullable|exists:gestiones,id',
-            'Correo_Electronico' => 'nullable|string',
-            'Password' => 'nullable|string',
-            'nombre' => 'nullable|string',
-            'celular' => 'nullable|string',
+            'Correo_Electronico' => 'nullable|email|max:255',
+            'Password' => 'nullable|string|min:6|max:255',
+            'nombre' => 'nullable|string|max:255',
+            'celular' => 'nullable|string|max:50',
             'Fecha_Inicio' => 'nullable|date',
-            'Fecha_Fin' => 'nullable|date',
-            'Concepto' => 'nullable|string',
-            'SaldoPagar' => 'nullable|numeric',
-            'AbonoDeuda' => 'nullable|numeric',
-            'TotalPagar' => 'nullable|numeric',
+            'Fecha_Fin' => 'nullable|date|after_or_equal:Fecha_Inicio',
+            'Concepto' => 'nullable|string|max:500',
+            'SaldoPagar' => 'nullable|numeric|min:0',
+            'AbonoDeuda' => 'nullable|numeric|min:0',
+            'TotalPagar' => 'nullable|numeric|min:0',
         ];
 
         if (!$isUpdate) {
@@ -53,17 +53,17 @@ class ClienteController extends Controller
     {
         if ($request->wantsJson()) {
             $gestionId = $request->query('gestion_id');
-            
+
             if ($gestionId) {
                 return Cliente::where('gestion_id', $gestionId)->get();
             }
-            
+
             // Si no se especifica gestión, usar la activa
             $gestionActiva = Gestion::activa();
             if ($gestionActiva) {
                 return Cliente::where('gestion_id', $gestionActiva->id)->get();
             }
-            
+
             return Cliente::all();
         }
         return view('gestor.index');
@@ -74,19 +74,19 @@ class ClienteController extends Controller
     {
         try {
             $validated = $request->validate($this->getValidationRules());
-            
+
             // Asignar gestión activa si no se especifica
             if (!isset($validated['gestion_id']) || !$validated['gestion_id']) {
                 $gestionActiva = Gestion::activa();
                 $validated['gestion_id'] = $gestionActiva ? $gestionActiva->id : null;
             }
-            
+
             \DB::beginTransaction();
-            
+
             $cliente = new Cliente($validated);
             $this->asignarMeses($cliente, $request);
             $cliente->save();
-            
+
             \DB::commit();
 
             return response()->json($cliente, 201);
@@ -110,11 +110,11 @@ class ClienteController extends Controller
             $validated = $request->validate($this->getValidationRules(true));
 
             \DB::beginTransaction();
-            
+
             $cliente->fill($validated);
             $this->asignarMeses($cliente, $request);
             $cliente->save();
-            
+
             \DB::commit();
 
             return response()->json($cliente);
@@ -129,12 +129,12 @@ class ClienteController extends Controller
     {
         try {
             \DB::beginTransaction();
-            
+
             $cliente = Cliente::findOrFail($id);
             $cliente->delete();
-            
+
             \DB::commit();
-            
+
             return response()->json(['success' => true]);
         } catch (\Exception $e) {
             \DB::rollBack();

@@ -16,6 +16,11 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'auth.check' => \App\Http\Middleware\CheckAuth::class,
         ]);
+
+        // Aplicar headers de seguridad a todas las peticiones web
+        $middleware->web(append: [
+            \App\Http\Middleware\SecurityHeaders::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

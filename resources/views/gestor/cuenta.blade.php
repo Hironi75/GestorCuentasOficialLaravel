@@ -10,20 +10,7 @@
 </head>
 <body>
     <div class="gestor-main-container">
-        <header class="gestor-header">
-            <h1>Gestor de Cuentas</h1>
-            <nav class="nav-tabs">
-                <a href="/cuenta" class="nav-tab active">Cuenta</a>
-                <a href="/gestor" class="nav-tab">Gestor</a>
-            </nav>
-            <div class="user-info">
-                <span class="user-name">👤 {{ session('usuario_nombre') }}</span>
-                <form method="POST" action="{{ route('logout') }}" style="margin: 0;">
-                    @csrf
-                    <button type="submit" class="logout-btn">Cerrar Sesión</button>
-                </form>
-            </div>
-        </header>
+        @include('gestor.header');
         <main class="gestor-main">
             <section class="gestor-section">
                 <h2>Configuración de Cuenta</h2>
@@ -68,7 +55,7 @@
                 <div id="exportar-menu" style="max-height:0; overflow:hidden; transition:max-height 0.5s ease; background:#ecf0f1; border-radius:8px; box-shadow:0 4px 12px rgba(0,0,0,0.12); margin-top:18px; padding:0 20px;">
                     <!-- Aquí va el CRUD de exportar -->
                     <h3 style="margin-top:18px;">EXPORTAR CLIENTES</h3>
-                    
+
                     <div style="margin-bottom:16px; display:flex; gap:16px; align-items:center; flex-wrap:wrap;">
                         <div class="form-group" style="margin-bottom:0;">
                             <label for="exportar-gestion">Gestión</label>
@@ -81,7 +68,7 @@
                     <!-- Selección de campos a exportar -->
                     <div style="background:#fff; padding:16px; border-radius:8px; margin-bottom:16px; border:1px solid #ddd;">
                         <h4 style="margin:0 0 12px 0; color:#2c3e50;">Seleccionar campos a exportar:</h4>
-                        
+
                         <div style="display:flex; gap:8px; margin-bottom:12px;">
                             <button type="button" id="btn-seleccionar-todos-campos" style="background:#3498db; color:#fff; border:none; padding:6px 14px; border-radius:4px; cursor:pointer; font-size:0.9em;">Seleccionar Todos</button>
                             <button type="button" id="btn-deseleccionar-todos-campos" style="background:#95a5a6; color:#fff; border:none; padding:6px 14px; border-radius:4px; cursor:pointer; font-size:0.9em;">Deseleccionar Todos</button>
@@ -256,7 +243,7 @@
                 <!-- SECCIÓN TRASPASAR -->
                 <div id="traspasar-menu" style="max-height:0; overflow:hidden; transition:max-height 0.5s ease; background:#ecf0f1; border-radius:8px; box-shadow:0 4px 12px rgba(0,0,0,0.12); margin-top:18px; padding:0 20px;">
                     <h3 style="margin-top:18px; color:#9b59b6;">TRASPASAR DATOS ENTRE GESTIONES</h3>
-                    
+
                     <div style="margin-bottom:16px; display:flex; gap:16px; align-items:center; flex-wrap:wrap;">
                         <div class="form-group" style="margin-bottom:0;">
                             <label for="traspasar-origen" style="font-weight:600; color:#2c3e50;">Gestión Origen</label>
@@ -276,7 +263,7 @@
                     <!-- Selección de campos a traspasar -->
                     <div style="background:#fff; padding:16px; border-radius:8px; margin-bottom:16px; border:1px solid #ddd;">
                         <h4 style="margin:0 0 12px 0; color:#2c3e50;">Seleccionar campos a traspasar:</h4>
-                        
+
                         <div style="display:flex; gap:8px; margin-bottom:12px;">
                             <button type="button" id="btn-seleccionar-todos-traspasar" style="background:#3498db; color:#fff; border:none; padding:6px 14px; border-radius:4px; cursor:pointer; font-size:0.9em;">Seleccionar Todos</button>
                             <button type="button" id="btn-deseleccionar-todos-traspasar" style="background:#95a5a6; color:#fff; border:none; padding:6px 14px; border-radius:4px; cursor:pointer; font-size:0.9em;">Deseleccionar Todos</button>

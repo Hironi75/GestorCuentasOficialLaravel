@@ -5,13 +5,16 @@ namespace App\Http\Controllers;
 use App\Models\Gestion;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use App\Models\Cliente;
 
 class GestionController extends Controller
 {
     // Obtener todas las gestiones
     public function index()
     {
-        return response()->json(Gestion::orderBy('anio', 'desc')->get());
+        $clientes = Cliente::all();
+        return view('gestor.index', compact('clientes'));
+        //return response()->json(Gestion::orderBy('anio', 'desc')->get());
     }
 
     // Crear nueva gestión
@@ -19,20 +22,20 @@ class GestionController extends Controller
     {
         try {
             $anio = $request->input('anio');
-            
+
             // Verificar si ya existe una gestión con ese año
             if (Gestion::where('anio', $anio)->exists()) {
                 return response()->json(['error' => 'Ya existe una gestión para el año ' . $anio], 422);
             }
 
             \DB::beginTransaction();
-            
+
             $gestion = Gestion::create([
                 'anio' => $anio,
                 'nombre' => $request->input('nombre') ?? 'Gestión ' . $anio,
                 'activa' => false
             ]);
-            
+
             \DB::commit();
 
             return response()->json($gestion, 201);
@@ -54,17 +57,17 @@ class GestionController extends Controller
     {
         try {
             \DB::beginTransaction();
-            
+
             // Desactivar todas
             Gestion::query()->update(['activa' => false]);
-            
+
             // Activar la seleccionada
             $gestion = Gestion::findOrFail($id);
             $gestion->activa = true;
             $gestion->save();
-            
+
             \DB::commit();
-            
+
             return response()->json($gestion);
         } catch (\Exception $e) {
             \DB::rollBack();
@@ -77,20 +80,20 @@ class GestionController extends Controller
     {
         try {
             $gestion = Gestion::findOrFail($id);
-            
+
             // No permitir eliminar si tiene clientes
             if ($gestion->clientes()->count() > 0) {
                 return response()->json([
                     'message' => 'No se puede eliminar una gestión con clientes asociados'
                 ], 400);
             }
-            
+
             \DB::beginTransaction();
-            
+
             $gestion->delete();
-            
+
             \DB::commit();
-            
+
             return response()->json(['success' => true]);
         } catch (\Exception $e) {
             \DB::rollBack();
@@ -104,20 +107,20 @@ class GestionController extends Controller
         try {
             $gestion = Gestion::findOrFail($id);
             $anio = $request->input('anio');
-            
+
             // Verificar si ya existe otra gestión con ese año
             if (Gestion::where('anio', $anio)->where('id', '!=', $id)->exists()) {
                 return response()->json(['error' => 'Ya existe una gestión para el año ' . $anio], 422);
             }
-            
+
             \DB::beginTransaction();
-            
+
             $gestion->anio = $anio;
             $gestion->nombre = $request->input('nombre') ?? ('Gestión ' . $anio);
             $gestion->save();
-            
+
             \DB::commit();
-            
+
             return response()->json($gestion);
         } catch (\Exception $e) {
             \DB::rollBack();

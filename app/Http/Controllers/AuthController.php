@@ -19,7 +19,7 @@ class AuthController extends Controller
         if (Session::has('usuario_id')) {
             return redirect('/gestor');
         }
-        
+
         return view('login.index');
     }
 
@@ -29,8 +29,6 @@ class AuthController extends Controller
     public function login(Request $request)
     {
         try {
-            DB::beginTransaction();
-            
             $request->validate([
                 'usuario' => 'required|string',
                 'password' => 'required|string',
@@ -50,13 +48,10 @@ class AuthController extends Controller
             // Crear sesión
             Session::put('usuario_id', $usuario->id);
             Session::put('usuario_nombre', $usuario->usuario);
-            
-            DB::commit();
 
             return redirect('/gestor')->with('success', '¡Bienvenido!');
-            
+
         } catch (\Exception $e) {
-            DB::rollBack();
             return back()->with('error', 'Error al iniciar sesión: ' . $e->getMessage());
         }
     }
@@ -70,7 +65,7 @@ class AuthController extends Controller
         if (Session::has('usuario_id')) {
             return redirect('/gestor');
         }
-        
+
         return view('login.register');
     }
 
@@ -107,7 +102,7 @@ class AuthController extends Controller
             DB::commit();
 
             return redirect()->route('login')->with('success', '¡Usuario creado exitosamente! Ahora puedes iniciar sesión.');
-            
+
         } catch (\Illuminate\Validation\ValidationException $e) {
             throw $e;
         } catch (\Exception $e) {
