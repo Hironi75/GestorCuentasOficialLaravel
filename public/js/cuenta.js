@@ -2,15 +2,43 @@
 let datosTraspaso = null;
 
 document.addEventListener('DOMContentLoaded', function() {
-    cargarGestiones();
-    document.getElementById('form-gestion').addEventListener('submit', crearGestion);
+    // Solo cargar gestiones si estamos en la página correcta
+    const gestionesList = document.getElementById('gestiones-list');
+    const formGestion = document.getElementById('form-gestion');
+
+    if (gestionesList) {
+        cargarGestiones();
+    }
+
+    if (formGestion) {
+        formGestion.addEventListener('submit', crearGestion);
+    }
 });
 
 function cargarGestiones() {
-    fetch('/gestiones')
-        .then(r => r.json())
+    const tbody = document.getElementById('gestiones-list');
+    if (!tbody) {
+        console.log('Elemento gestiones-list no encontrado, saltando carga');
+        return;
+    }
+
+    fetch('/gestiones', {
+        headers: {
+            'Accept': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+        .then(r => {
+            if (!r.ok) {
+                throw new Error('Error en la respuesta del servidor: ' + r.status);
+            }
+            const contentType = r.headers.get('content-type');
+            if (!contentType || !contentType.includes('application/json')) {
+                throw new Error('La respuesta no es JSON');
+            }
+            return r.json();
+        })
         .then(gestiones => {
-            const tbody = document.getElementById('gestiones-list');
             tbody.innerHTML = '';
             gestiones.forEach(g => {
                 const tr = document.createElement('tr');
@@ -26,6 +54,9 @@ function cargarGestiones() {
                 `;
                 tbody.appendChild(tr);
             });
+        })
+        .catch(error => {
+            console.error('Error al cargar gestiones:', error);
         });
 }
 
@@ -50,6 +81,8 @@ function crearGestion(e) {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
             },
             body: JSON.stringify({anio, nombre})
@@ -72,6 +105,8 @@ function crearGestion(e) {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
             },
             body: JSON.stringify({anio, nombre})
@@ -149,17 +184,17 @@ function mostrarModalExito(mensaje, detalles = null) {
     const modal = document.getElementById('modal-exito');
     const mensajeEl = document.getElementById('mensaje-exito');
     const detallesEl = document.getElementById('detalles-exito');
-    
+
     if (modal && mensajeEl) {
         mensajeEl.textContent = mensaje;
-        
+
         if (detalles) {
             detallesEl.innerHTML = detalles;
             detallesEl.style.display = 'block';
         } else {
             detallesEl.style.display = 'none';
         }
-        
+
         modal.style.display = 'flex';
         modal.classList.add('show');
     }
@@ -177,17 +212,17 @@ function mostrarModalExito(mensaje, detalles = null) {
     const modal = document.getElementById('modal-exito');
     const mensajeEl = document.getElementById('mensaje-exito');
     const detallesEl = document.getElementById('detalles-exito');
-    
+
     if (modal && mensajeEl) {
         mensajeEl.textContent = mensaje;
-        
+
         if (detalles) {
             detallesEl.innerHTML = detalles;
             detallesEl.style.display = 'block';
         } else {
             detallesEl.style.display = 'none';
         }
-        
+
         modal.style.display = 'flex';
         modal.classList.add('show');
     }
@@ -207,6 +242,8 @@ function confirmarEliminarGestion() {
     fetch(`/gestiones/${idGestionEliminar}`, {
         method: 'DELETE',
         headers: {
+            'Accept': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest',
             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
         }
     })
@@ -246,6 +283,8 @@ function activarGestion(id) {
     fetch(`/gestiones/${id}/activa`, {
         method: 'POST',
         headers: {
+            'Accept': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest',
             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
         }
     })
@@ -259,7 +298,7 @@ window.addEventListener('click', function(event) {
     const modalAdvertencia = document.getElementById('modal-advertencia');
     const modalExito = document.getElementById('modal-exito');
     const modalConfirmacionTraspaso = document.getElementById('modal-confirmacion-traspaso');
-    
+
     if (event.target === modalConfirmacion) {
         cerrarModalConfirmacion();
     }
@@ -391,17 +430,17 @@ if (document.getElementById('btn-exportar-excel')) {
     document.getElementById('btn-exportar-excel').addEventListener('click', function() {
         const gestionId = document.getElementById('exportar-gestion').value;
         const campos = obtenerCamposSeleccionados();
-        
+
         if (!gestionId) {
             mostrarModalAdvertencia('Por favor, selecciona una gestión.');
             return;
         }
-        
+
         if (campos.length === 0) {
             mostrarModalAdvertencia('Por favor, selecciona al menos un campo para exportar.');
             return;
         }
-        
+
         // Redirigir a la ruta de exportación
         window.location.href = `/api/exportar/excel?gestion_id=${gestionId}&campos=${campos.join(',')}`;
     });
@@ -412,17 +451,17 @@ if (document.getElementById('btn-exportar-pdf')) {
     document.getElementById('btn-exportar-pdf').addEventListener('click', function() {
         const gestionId = document.getElementById('exportar-gestion').value;
         const campos = obtenerCamposSeleccionados();
-        
+
         if (!gestionId) {
             mostrarModalAdvertencia('Por favor, selecciona una gestión.');
             return;
         }
-        
+
         if (campos.length === 0) {
             mostrarModalAdvertencia('Por favor, selecciona al menos un campo para exportar.');
             return;
         }
-        
+
         // Redirigir a la ruta de exportación
         window.location.href = `/api/exportar/pdf?gestion_id=${gestionId}&campos=${campos.join(',')}`;
     });
@@ -455,13 +494,13 @@ async function cargarGestionesTraspasar() {
     try {
         const response = await fetch('/api/gestiones');
         const gestiones = await response.json();
-        
+
         const selectOrigen = document.getElementById('traspasar-origen');
         const selectDestino = document.getElementById('traspasar-destino');
-        
+
         selectOrigen.innerHTML = '<option value="">-- Seleccionar Origen --</option>';
         selectDestino.innerHTML = '<option value="">-- Seleccionar Destino --</option>';
-        
+
         gestiones.forEach(g => {
             const option = `<option value="${g.id}">${g.nombre || 'Gestión ' + g.anio} (${g.anio})</option>`;
             selectOrigen.innerHTML += option;
@@ -538,27 +577,27 @@ if (document.getElementById('btn-traspasar')) {
         const origenId = document.getElementById('traspasar-origen').value;
         const destinoId = document.getElementById('traspasar-destino').value;
         const campos = obtenerCamposTraspasar();
-        
+
         if (!origenId) {
             mostrarModalAdvertencia('Por favor, selecciona una gestión de origen.');
             return;
         }
-        
+
         if (!destinoId) {
             mostrarModalAdvertencia('Por favor, selecciona una gestión de destino.');
             return;
         }
-        
+
         if (origenId === destinoId) {
             mostrarModalAdvertencia('La gestión de origen y destino no pueden ser la misma.');
             return;
         }
-        
+
         if (campos.length === 0) {
             mostrarModalAdvertencia('Por favor, selecciona al menos un campo para traspasar.');
             return;
         }
-        
+
         // Guardar datos y mostrar modal de confirmación
         datosTraspaso = { origenId, destinoId, campos };
         mostrarModalConfirmacionTraspaso();
@@ -587,16 +626,16 @@ async function confirmarTraspaso() {
         console.error('datosTraspaso es null');
         return;
     }
-    
+
     // Guardar los datos antes de cerrar el modal
     const datos = { ...datosTraspaso };
-    
+
     // Ahora sí cerrar el modal y limpiar
     cerrarModalConfirmacionTraspaso();
-    
+
     try {
         console.log('Enviando datos de traspaso:', datos);
-        
+
         const response = await fetch('/api/traspasar', {
             method: 'POST',
             headers: {
@@ -609,18 +648,18 @@ async function confirmarTraspaso() {
                 campos: datos.campos
             })
         });
-        
+
         console.log('Response status:', response.status);
-        
+
         if (!response.ok) {
             const errorText = await response.text();
             console.error('Error response:', errorText);
             throw new Error(`HTTP error! status: ${response.status}`);
         }
-        
+
         const result = await response.json();
         console.log('Result:', result);
-        
+
         if (result.success) {
             const detallesHTML = `
                 <p><strong>${result.actualizados}</strong> clientes actualizados</p>

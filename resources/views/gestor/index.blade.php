@@ -7,6 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gestor de Cuentas</title>
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
     <link rel="stylesheet" href="{{ asset('css/gestor.css') }}">
 </head>
 
@@ -14,40 +15,40 @@
     <div class="gestor-main-container">
         @include('gestor.header')
         <main class="gestor-main">
-            <section class="gestor-section">
-                <h2 style="margin:0; color:#2d3436; font-size:1.5rem;">Listado de Cuentas <span id="gestion-actual-label" style="font-size:0.9rem; color:#7f8c8d;"></span></h2>
+            <section class="gestor-section px-2 sm:px-4 md:px-6">
+                <h2 class="m-0 text-gray-800 text-base sm:text-lg md:text-xl lg:text-2xl">Listado de Cuentas <span id="gestion-actual-label" class="text-xs sm:text-sm text-gray-500"></span></h2>
                 <!-- Controles de Paginación -->
-                <div class="pagination-container">
+                <div class="pagination-container flex flex-col lg:flex-row gap-3 lg:gap-0 lg:justify-between items-center mt-4 p-3 sm:p-4 bg-white rounded-lg shadow">
                     <!-- Selector de registros por página -->
-                    <div style="display:flex; align-items:center; gap:10px;">
-                        <label for="per-page-select" class="pagination-select-label">Mostrar:</label>
-                        <select id="per-page-select" onchange="window.location.href='{{ route('gestor') }}?per_page=' + this.value" class="pagination-select">
+                    <div class="flex flex-wrap items-center justify-center gap-2 sm:gap-3 w-full lg:w-auto">
+                        <label for="per-page-select" class="pagination-select-label text-xs sm:text-sm">Mostrar:</label>
+                        <select id="per-page-select" onchange="window.location.href='{{ route('gestor') }}?per_page=' + this.value" class="pagination-select text-xs sm:text-sm p-1 sm:p-2">
                             <option value="25" {{ (isset($perPage) && $perPage == 25) || !isset($perPage) ? 'selected' : '' }}>25</option>
                             <option value="50" {{ isset($perPage) && $perPage == 50 ? 'selected' : '' }}>50</option>
                             <option value="100" {{ isset($perPage) && $perPage == 100 ? 'selected' : '' }}>100</option>
                         </select>
-                        <span class="pagination-info">
-                            Mostrando {{ $clientes->firstItem() ?? 0 }} - {{ $clientes->lastItem() ?? 0 }} de {{ $clientes->total() }} registros
+                        <span class="pagination-info text-xs sm:text-sm text-center">
+                            {{ $clientes->firstItem() ?? 0 }} - {{ $clientes->lastItem() ?? 0 }} de {{ $clientes->total() }}
                         </span>
                     </div>
                     <!-- Enlaces de paginación -->
-                    <div class="pagination-links">
+                    <div class="pagination-links flex flex-wrap justify-center gap-1 sm:gap-2 w-full lg:w-auto">
                         {{-- Botón Anterior --}}
                         @if ($clientes->onFirstPage())
-                            <span class="pagination-btn disabled">‹ Anterior</span>
+                            <span class="pagination-btn disabled text-xs sm:text-sm px-2 sm:px-4 py-1 sm:py-2">‹ Ant</span>
                         @else
-                            <a href="{{ $clientes->previousPageUrl() }}" class="pagination-btn">‹ Anterior</a>
+                            <a href="{{ $clientes->previousPageUrl() }}" class="pagination-btn text-xs sm:text-sm px-2 sm:px-4 py-1 sm:py-2">‹ Ant</a>
                         @endif
                         {{-- Input de página actual --}}
-                        <div style="display:flex; align-items:center; gap:8px;">
-                            <span class="pagination-label">Página</span>
+                        <div class="flex items-center gap-1 sm:gap-2">
+                            <span class="pagination-label text-xs sm:text-sm hidden sm:inline">Pág</span>
                             <input
                                 type="number"
                                 id="page-input"
                                 value="{{ $clientes->currentPage() }}"
                                 min="1"
                                 max="{{ $clientes->lastPage() }}"
-                                class="pagination-page-input"
+                                class="pagination-page-input w-10 sm:w-14 text-xs sm:text-sm p-1 sm:p-2"
                                 onkeypress="if(event.key === 'Enter') {
                                     let page = parseInt(this.value);
                                     let maxPage = {{ $clientes->lastPage() }};
@@ -59,71 +60,79 @@
                                     }
                                 }"
                             >
-                            <span class="pagination-info">de {{ $clientes->lastPage() }}</span>
+                            <span class="pagination-info text-xs sm:text-sm">/ {{ $clientes->lastPage() }}</span>
                         </div>
                         {{-- Botón Siguiente --}}
                         @if ($clientes->hasMorePages())
-                            <a href="{{ $clientes->nextPageUrl() }}" class="pagination-btn">Siguiente ›</a>
+                            <a href="{{ $clientes->nextPageUrl() }}" class="pagination-btn text-xs sm:text-sm px-2 sm:px-4 py-1 sm:py-2">Sig ›</a>
                         @else
-                            <span class="pagination-btn disabled">Siguiente ›</span>
+                            <span class="pagination-btn disabled text-xs sm:text-sm px-2 sm:px-4 py-1 sm:py-2">Sig ›</span>
                         @endif
                         {{-- Botón Última Página --}}
                         @if ($clientes->currentPage() < $clientes->lastPage())
-                            <a href="{{ $clientes->url($clientes->lastPage()) }}" class="pagination-btn">
-                                Última »
+                            <a href="{{ $clientes->url($clientes->lastPage()) }}" class="pagination-btn text-xs sm:text-sm px-2 sm:px-4 py-1 sm:py-2">
+                                »
                             </a>
                         @else
-                            <span class="pagination-btn disabled">Última »</span>
+                            <span class="pagination-btn disabled text-xs sm:text-sm px-2 sm:px-4 py-1 sm:py-2">»</span>
                         @endif
                     </div>
                 </div>
                 &nbsp;
-                <div class="gestor-toolbar">
-                    <form method="GET" action="{{ route('gestor') }}" id="form-filtros" style="display:flex; gap:8px; align-items:center; width:100%;">
+                <div class="gestor-toolbar flex flex-col lg:flex-row gap-2 lg:gap-4 mb-4">
+                    <form method="GET" action="{{ route('gestor') }}" id="form-filtros" class="flex flex-col sm:flex-row flex-wrap gap-2 items-stretch sm:items-center w-full">
                         <!-- Mantener per_page en el formulario -->
                         <input type="hidden" name="per_page" value="{{ $perPage ?? 25 }}">
 
-                        <select name="filtro_campo" id="filtro-campo" onchange="this.form.submit()">
+                        <select name="filtro_campo" id="filtro-campo" onchange="this.form.submit()" class="text-xs sm:text-sm p-2 rounded border border-gray-300 w-full sm:w-auto">
                             <option value="id" {{ (isset($filtroCampo) && $filtroCampo == 'id') || !isset($filtroCampo) ? 'selected' : '' }}>ID</option>
                             <option value="nombre" {{ isset($filtroCampo) && $filtroCampo == 'nombre' ? 'selected' : '' }}>Nombre</option>
-                            <option value="correo" {{ isset($filtroCampo) && $filtroCampo == 'correo' ? 'selected' : '' }}>Correo electrónico</option>
+                            <option value="correo" {{ isset($filtroCampo) && $filtroCampo == 'correo' ? 'selected' : '' }}>Correo</option>
                         </select>
 
-                        <input name="filtro_busqueda" id="filtro-cuentas" type="text" placeholder="Buscar..." value="{{ $filtroBusqueda ?? '' }}">
+                        <input name="filtro_busqueda" id="filtro-cuentas" type="text" placeholder="Buscar..." value="{{ $filtroBusqueda ?? '' }}" class="text-xs sm:text-sm p-2 rounded border border-gray-300 w-full sm:w-40 md:w-52 lg:w-64">
 
-                        <select name="filtro_dias" id="filtro-dias" onchange="this.form.submit()">
+                        <select name="filtro_dias" id="filtro-dias" onchange="this.form.submit()" class="text-xs sm:text-sm p-2 rounded border border-gray-300 w-full sm:w-auto">
                             <option value="todos" {{ (isset($filtroDias) && $filtroDias == 'todos') || !isset($filtroDias) ? 'selected' : '' }}>Todos</option>
-                            <option value="3" {{ isset($filtroDias) && $filtroDias == '3' ? 'selected' : '' }}>3 días o menos</option>
-                            <option value="5" {{ isset($filtroDias) && $filtroDias == '5' ? 'selected' : '' }}>5 días o menos</option>
-                            <option value="6" {{ isset($filtroDias) && $filtroDias == '6' ? 'selected' : '' }}>6 días o menos</option>
-                            <option value="8" {{ isset($filtroDias) && $filtroDias == '8' ? 'selected' : '' }}>8 días o menos</option>
+                            <option value="3" {{ isset($filtroDias) && $filtroDias == '3' ? 'selected' : '' }}>≤3 días</option>
+                            <option value="5" {{ isset($filtroDias) && $filtroDias == '5' ? 'selected' : '' }}>≤5 días</option>
+                            <option value="6" {{ isset($filtroDias) && $filtroDias == '6' ? 'selected' : '' }}>≤6 días</option>
+                            <option value="8" {{ isset($filtroDias) && $filtroDias == '8' ? 'selected' : '' }}>≤8 días</option>
                         </select>
 
-                        <div style="margin-left:auto; display:flex; gap:8px;">
-                            <button type="button" id="btn-agregar">Agregar</button>
-                            <a href="{{ route('gestor') }}?per_page={{ $perPage ?? 25 }}&deudores=1"
-                               class="deudores-btn"
-                               style="background: #e74c3c; color: #fff; padding: 10px 22px; border-radius: 4px; text-decoration: none; display: inline-block; border: none; cursor: pointer; font-size: 1rem;">
-                                {{ isset($deudores) && $deudores ? 'Ver Todos' : 'Deudores' }}
-                            </a>
+                        <div class="flex gap-2 w-full sm:w-auto sm:ml-auto mt-2 sm:mt-0">
+                            <button type="button" id="btn-agregar" class="flex-1 sm:flex-none text-xs sm:text-sm px-3 sm:px-5 py-2 bg-green-600 text-white rounded hover:bg-green-700">Agregar</button>
+                            @if(isset($deudores) && $deudores)
+                                <a href="{{ route('gestor') }}?per_page={{ $perPage ?? 25 }}"
+                                   class="flex-1 sm:flex-none text-center text-xs sm:text-sm px-3 sm:px-5 py-2 bg-red-600 text-white rounded hover:bg-red-800 active:bg-red-900 no-underline">
+                                    Ver Todos
+                                </a>
+                            @else
+                                <a href="{{ route('gestor') }}?per_page={{ $perPage ?? 25 }}&deudores=1"
+                                   class="flex-1 sm:flex-none text-center text-xs sm:text-sm px-3 sm:px-5 py-2 bg-red-500 text-white rounded hover:bg-red-600 active:bg-red-700 no-underline">
+                                    Deudores
+                                </a>
+                            @endif
                         </div>
                     </form>
                 </div>
-                <div class="gestor-table-container">
-                    <table id="tabla-cuentas-table" class="gestor-table">
+                <div class="gestor-table-container overflow-x-auto rounded-lg shadow">
+                    <!-- Mensaje de scroll en móvil -->
+                    <p class="text-xs text-gray-500 text-center py-1 bg-gray-100 lg:hidden">👆 Desliza horizontalmente para ver más columnas</p>
+                    <table id="tabla-cuentas-table" class="gestor-table text-xs sm:text-sm min-w-[800px]">
                         <thead>
                             <tr>
-                                <th>ID Cliente</th>
-                                <th>Correo Electrónico</th>
-                                <th>Password</th>
-                                <th>Nombre</th>
-                                <th>Fecha Inicio</th>
-                                <th>Fecha Fin</th>
-                                <th>Concepto</th>
-                                <th class="columna-compacta">Saldo Pagar</th>
-                                <th class="columna-compacta" style="border:1px solid #b2bec3; padding:8px;" >Abono Deuda</th>
-                                <th class="columna-compacta" style="border:1px solid #b2bec3; padding:8px;">Total Pagar</th>
-                                <th style="border:1px solid #b2bec3; padding:8px;">Acciones</th>
+                                <th class="whitespace-nowrap px-1 sm:px-2 py-1 sm:py-2">ID</th>
+                                <th class="whitespace-nowrap px-1 sm:px-2 py-1 sm:py-2">Correo</th>
+                                <th class="whitespace-nowrap px-1 sm:px-2 py-1 sm:py-2 hidden md:table-cell">Pass</th>
+                                <th class="whitespace-nowrap px-1 sm:px-2 py-1 sm:py-2">Nombre</th>
+                                <th class="whitespace-nowrap px-1 sm:px-2 py-1 sm:py-2 hidden lg:table-cell">F.Inicio</th>
+                                <th class="whitespace-nowrap px-1 sm:px-2 py-1 sm:py-2">F.Fin</th>
+                                <th class="whitespace-nowrap px-1 sm:px-2 py-1 sm:py-2 hidden lg:table-cell">Concepto</th>
+                                <th class="columna-compacta whitespace-nowrap px-1 sm:px-2 py-1 sm:py-2 hidden sm:table-cell">Saldo</th>
+                                <th class="columna-compacta whitespace-nowrap px-1 sm:px-2 py-1 sm:py-2 hidden md:table-cell">Abono</th>
+                                <th class="columna-compacta whitespace-nowrap px-1 sm:px-2 py-1 sm:py-2">Total</th>
+                                <th class="whitespace-nowrap px-1 sm:px-2 py-1 sm:py-2">Acc.</th>
                             </tr>
                         </thead>
                         <tbody id="tabla-cuentas">
@@ -163,28 +172,28 @@
                                         }
                                     @endphp
                                     <tr style="{{ $estilo }}">
-                                        <td class="text-center">{{ $cliente->id_cliente }}{{ $simboloDeuda }}</td>
-                                        <td>{{ $cliente->Correo_Electronico }}</td>
-                                        <td>{{ $cliente->Password }}</td>
-                                        <td>{{ $cliente->nombre }}</td>
-                                        <td class="text-center">{{ $cliente->Fecha_Inicio }}</td>
-                                        <td class="text-center">{{ $cliente->Fecha_Fin }}</td>
-                                        <td>{{ $cliente->Concepto }}</td>
-                                        <td class="text-center">{{ $cliente->SaldoPagar }}</td>
-                                        <td class="text-center">{{ $cliente->AbonoDeuda }}</td>
-                                        <td class="text-center">{{ $cliente->TotalPagar }}</td>
-                                        <td class="acciones-btns">
+                                        <td class="text-center px-1 sm:px-2 py-1 sm:py-2 text-xs sm:text-sm">{{ $cliente->id_cliente }}{{ $simboloDeuda }}</td>
+                                        <td class="px-1 sm:px-2 py-1 sm:py-2 text-xs sm:text-sm truncate max-w-[100px] sm:max-w-[150px]">{{ $cliente->Correo_Electronico }}</td>
+                                        <td class="px-1 sm:px-2 py-1 sm:py-2 text-xs sm:text-sm hidden md:table-cell">{{ $cliente->Password }}</td>
+                                        <td class="px-1 sm:px-2 py-1 sm:py-2 text-xs sm:text-sm truncate max-w-[80px] sm:max-w-[120px]">{{ $cliente->nombre }}</td>
+                                        <td class="text-center px-1 sm:px-2 py-1 sm:py-2 text-xs sm:text-sm hidden lg:table-cell">{{ $cliente->Fecha_Inicio }}</td>
+                                        <td class="text-center px-1 sm:px-2 py-1 sm:py-2 text-xs sm:text-sm whitespace-nowrap">{{ $cliente->Fecha_Fin }}</td>
+                                        <td class="px-1 sm:px-2 py-1 sm:py-2 text-xs sm:text-sm hidden lg:table-cell truncate max-w-[100px]">{{ $cliente->Concepto }}</td>
+                                        <td class="text-center px-1 sm:px-2 py-1 sm:py-2 text-xs sm:text-sm hidden sm:table-cell">{{ $cliente->SaldoPagar }}</td>
+                                        <td class="text-center px-1 sm:px-2 py-1 sm:py-2 text-xs sm:text-sm hidden md:table-cell">{{ $cliente->AbonoDeuda }}</td>
+                                        <td class="text-center px-1 sm:px-2 py-1 sm:py-2 text-xs sm:text-sm font-semibold">{{ $cliente->TotalPagar }}</td>
+                                        <td class="acciones-btns px-1 py-1">
                                             <!-- Botón Ver -->
-                                            <button title="Ver" class="btn-ver" data-id="{{ $cliente->id_cliente }}">
-                                                <span style="font-size:1.4em;line-height:1;">&#128065;</span>
+                                            <button title="Ver" class="btn-ver w-7 h-7 sm:w-8 sm:h-8 text-sm sm:text-base" data-id="{{ $cliente->id_cliente }}">
+                                                <span class="leading-none">👁</span>
                                             </button>
                                             <!-- Botón Editar -->
-                                            <button title="Editar" class="btn-editar" data-id="{{ $cliente->id_cliente }}">
-                                                <span style="font-size:1.4em;line-height:1;">&#9998;</span>
+                                            <button title="Editar" class="btn-editar w-7 h-7 sm:w-8 sm:h-8 text-sm sm:text-base" data-id="{{ $cliente->id_cliente }}">
+                                                <span class="leading-none">✎</span>
                                             </button>
                                             <!-- Botón Eliminar -->
-                                            <button title="Eliminar" class="btn-eliminar" data-id="{{ $cliente->id_cliente }}">
-                                                <span style="font-size:1.4em;line-height:1;">&#128465;</span>
+                                            <button title="Eliminar" class="btn-eliminar w-7 h-7 sm:w-8 sm:h-8 text-sm sm:text-base" data-id="{{ $cliente->id_cliente }}">
+                                                <span class="leading-none">🗑</span>
                                             </button>
                                         </td>
                                     </tr>
@@ -395,10 +404,10 @@
                     // Limpiar el timeout anterior
                     clearTimeout(timeoutId);
 
-                    // Esperar 500ms después de que el usuario deje de escribir
+                    // Esperar 800ms después de que el usuario deje de escribir (reducir peticiones)
                     timeoutId = setTimeout(() => {
                         formFiltros.submit();
-                    }, 500);
+                    }, 800);
                 });
 
                 // Si el usuario presiona Enter, enviar inmediatamente

@@ -35,7 +35,7 @@ Route::middleware('auth.check')->group(function () {
     })->name('cuenta');
 
     // Rutas para el CRUD de gestiones (AJAX)
-    Route::get('/gestiones', [GestionController::class, 'index']);
+    Route::get('/gestiones', [GestionController::class, 'list']); // Nueva ruta para listar gestiones como JSON
     Route::post('/gestiones', [GestionController::class, 'store']);
     Route::delete('/gestiones/{id}', [GestionController::class, 'destroy']);
     Route::post('/gestiones/{id}/activa', [GestionController::class, 'setActiva']);
