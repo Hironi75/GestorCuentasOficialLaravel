@@ -26,4 +26,10 @@ class Cliente extends Model
     {
         return $this->belongsTo(Gestion::class, 'gestion_id');
     }
+
+    // Relación inversa: un cliente puede tener múltiples gestiones asociadas
+    public function gestiones()
+    {
+        return $this->hasMany(Gestion::class, 'gestion_id', 'gestion_id');
+    }
 }
