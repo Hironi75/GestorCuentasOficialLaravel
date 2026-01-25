@@ -37,7 +37,7 @@ body {
 .gestor-header {
     background: var(--color-primary);
     color: var(--color-white);
-    padding: 20px 0;
+    padding: 0;
     text-align: center;
     position: relative;
 }

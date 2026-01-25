@@ -1,4 +1,4 @@
-<header class="gestor-header !relative !p-0">
+<header class="gestor-header relative p-0">
     <!-- Barra superior con usuario -->
     <div class="bg-slate-800 px-4 py-2 flex justify-end items-center gap-3">
         <div class="flex items-center gap-2 bg-slate-700 px-3 py-1.5 rounded-full">
@@ -26,5 +26,7 @@
             <a href="/cuenta" class="nav-tab text-sm sm:text-base px-4 sm:px-6 py-2 rounded-lg hover:bg-white/20 transition-all">Cuenta</a>
             <a href="/gestor" class="nav-tab text-sm sm:text-base px-4 sm:px-6 py-2 rounded-lg hover:bg-white/20 transition-all">Gestor</a>
         </nav>
+        <!-- Versión (siempre visible, estilo inline para forzar visualización) -->
+        <div id="app-version" style="margin-top: 8px; font-size: 11px; color: rgba(255, 255, 255, 0.6); display: block;">Versión: {{ config('app.version') }}</div>
     </div>
 </header>
