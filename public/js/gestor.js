@@ -377,8 +377,8 @@ window.addEventListener('DOMContentLoaded', function() {
             .then(() => {
                 elementos.modalCrud.style.display = 'none';
                 resetearFormulario();
-                // Recargar la página para mostrar los cambios
-                window.location.reload();
+                // Recargar la tabla para mostrar los cambios
+                recargarTabla();
             })
             .catch(error => {
                 if (error.errors && error.errors.id_cliente) {
@@ -570,8 +570,8 @@ window.addEventListener('DOMContentLoaded', function() {
                     .then(res => res.json())
                     .then(() => {
                         cerrarModalConfirmar();
-                        // Recargar la página para mostrar los cambios
-                        window.location.reload();
+                        // Recargar la tabla para mostrar los cambios
+                        recargarTabla();
                     })
                     .catch(() => {
                         cerrarModalConfirmar();
@@ -685,6 +685,43 @@ window.addEventListener('DOMContentLoaded', function() {
     if (btnCancelarEditarGestion) {
         btnCancelarEditarGestion.addEventListener('click', function() {
             document.getElementById('modal-editar-gestion').style.display = 'none';
+        });
+    }
+
+    // ==================== RECARGAR TABLA ====================
+    function recargarTabla() {
+        fetch(window.location.href, {
+            headers: {
+                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
+            }
+        })
+        .then(res => res.text())
+        .then(html => {
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
+
+            // Reemplazar el tbody de la tabla
+            const newTableBody = doc.querySelector('#tabla-cuentas');
+            if (newTableBody) {
+                document.querySelector('#tabla-cuentas').innerHTML = newTableBody.innerHTML;
+            }
+
+            // Reemplazar la paginación
+            const newPagination = doc.querySelector('.pagination-container');
+            if (newPagination) {
+                document.querySelector('.pagination-container').innerHTML = newPagination.innerHTML;
+            }
+
+            // Actualizar el label de gestión
+            const newLabel = doc.querySelector('#gestion-actual-label');
+            if (newLabel) {
+                document.querySelector('#gestion-actual-label').innerHTML = newLabel.innerHTML;
+            }
+        })
+        .catch(err => {
+            console.error('Error al recargar la tabla:', err);
+            // Fallback: recargar la página
+            window.location.reload();
         });
     }
 });
