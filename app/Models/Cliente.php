@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class Cliente extends Model
 {
+    // SoftDeletes removido según petición del usuario
+
     protected $table = 'clientes';
     protected $primaryKey = 'id_cliente';
     public $incrementing = false;

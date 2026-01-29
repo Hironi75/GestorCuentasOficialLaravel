@@ -24,10 +24,8 @@ Route::middleware('auth.check')->group(function () {
 
     //Ruta para mostrar la vista dashboard
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
-    // Ruta para mostrar la vista gestor
-    /**Route::get('/gestor', function () {
-    return view('gestor.index');
-    })->name('gestor');**/
+    // Endpoint para obtener datos del dashboard filtrados por gestión (AJAX)
+    Route::get('/dashboard/data/{gestionId?}', [DashboardController::class, 'data'])->name('dashboard.data');
 
     // Ruta para mostrar la vista cuenta
     Route::get('/cuenta', function () {
