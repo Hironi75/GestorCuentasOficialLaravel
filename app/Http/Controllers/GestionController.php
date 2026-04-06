@@ -30,22 +30,44 @@ class GestionController extends Controller
         }
 
         // Si es una petición web normal, devolver vista con clientes paginados
-        // Obtener parámetros de paginación y filtros
-        $perPage = (int) $request->get('per_page', 25);
-        $filtroCampo = $request->get('filtro_campo', 'id');
-        $filtroBusqueda = trim($request->get('filtro_busqueda', ''));
-        $filtroDias = $request->get('filtro_dias', 'todos');
-        $deudores = (bool) $request->get('deudores', false);
-
-        // Validar per_page
-        $perPage = in_array($perPage, [25, 50, 100]) ? $perPage : 25;
-
-        // Obtener gestión activa (con caché de 1 minuto)
+        $filters = $this->extractFiltersFromRequest($request);
         $gestionActiva = cache()->remember('gestion_activa', 60, function () {
             return Gestion::activa();
         });
 
-        // Construir query base - SOLO columnas necesarias para la tabla
+        // Construir y ejecutar query
+        $query = $this->buildClientQuery($gestionActiva);
+        $query = $this->applyFiltersToQuery($query, $filters, $gestionActiva);
+
+        // Paginar clientes
+        $clientes = $query->paginate($filters['per_page'])
+            ->appends($filters);
+
+        return view('gestor.index', compact('clientes', 'filters'));
+    }
+
+    /**
+     * Extrae y valida los filtros desde la request
+     */
+    private function extractFiltersFromRequest(Request $request): array
+    {
+        $perPage = (int) $request->get('per_page', 25);
+        $perPage = in_array($perPage, [25, 50, 100]) ? $perPage : 25;
+
+        return [
+            'per_page' => $perPage,
+            'filtro_campo' => $request->get('filtro_campo', 'id'),
+            'filtro_busqueda' => trim($request->get('filtro_busqueda', '')),
+            'filtro_dias' => $request->get('filtro_dias', 'todos'),
+            'deudores' => (bool) $request->get('deudores', false),
+        ];
+    }
+
+    /**
+     * Construye la query base de clientes con columnas necesarias
+     */
+    private function buildClientQuery($gestion)
+    {
         $query = Cliente::select([
             'id_cliente',
             'Correo_Electronico',
@@ -60,73 +82,78 @@ class GestionController extends Controller
             'gestion_id'
         ]);
 
-        // Filtrar por gestión activa primero (usa índice)
-        if ($gestionActiva) {
-            $query->where('gestion_id', $gestionActiva->id);
+        if ($gestion) {
+            $query->where('gestion_id', $gestion->id);
         }
 
-        // Aplicar filtro de deudores (más de 5 días vencidos) - antes de búsqueda
-        if ($deudores) {
-            $fechaLimite = now()->subDays(5)->toDateString();
-            $query->where('Fecha_Fin', '<', $fechaLimite);
+        return $query;
+    }
+
+    /**
+     * Aplica filtros a la query
+     */
+    private function applyFiltersToQuery($query, array $filters, $gestion)
+    {
+        // Filtro de deudores (más de 5 días vencidos)
+        if ($filters['deudores']) {
+            $query = $this->applyDebtorFilter($query);
         }
 
-        // Aplicar filtro de días restantes
-        if (!$deudores && $filtroDias !== 'todos' && is_numeric($filtroDias)) {
-            $hoy = now()->toDateString();
-            $fechaLimite = now()->addDays((int)$filtroDias)->toDateString();
-            $query->whereBetween('Fecha_Fin', [$hoy, $fechaLimite]);
+        // Filtro de días restantes
+        if (!$filters['deudores'] && $filters['filtro_dias'] !== 'todos' && is_numeric($filters['filtro_dias'])) {
+            $query = $this->applyDaysFilter($query, (int) $filters['filtro_dias']);
         }
 
-        // Aplicar filtro de búsqueda - Usar FULLTEXT para búsquedas más rápidas
-        if ($filtroBusqueda !== '') {
-            $busquedaLimpia = trim($filtroBusqueda);
-
-            // Si la búsqueda tiene más de 2 caracteres, usar FULLTEXT (más rápido)
-            // Si es muy corta, usar LIKE tradicional
-            if (strlen($busquedaLimpia) > 2) {
-                switch ($filtroCampo) {
-                    case 'id':
-                        $query->whereRaw('MATCH(id_cliente) AGAINST(? IN BOOLEAN MODE)', [$busquedaLimpia . '*']);
-                        break;
-                    case 'nombre':
-                        $query->whereRaw('MATCH(nombre) AGAINST(? IN BOOLEAN MODE)', [$busquedaLimpia . '*']);
-                        break;
-                    case 'correo':
-                        $query->whereRaw('MATCH(Correo_Electronico) AGAINST(? IN BOOLEAN MODE)', [$busquedaLimpia . '*']);
-                        break;
-                }
-            } else {
-                // Para búsquedas cortas, usar LIKE (FULLTEXT requiere mínimo 3-4 caracteres)
-                $busqueda = '%' . $busquedaLimpia . '%';
-                switch ($filtroCampo) {
-                    case 'id':
-                        $query->where('id_cliente', 'like', $busqueda);
-                        break;
-                    case 'nombre':
-                        $query->where('nombre', 'like', $busqueda);
-                        break;
-                    case 'correo':
-                        $query->where('Correo_Electronico', 'like', $busqueda);
-                        break;
-                }
-            }
+        // Filtro de búsqueda
+        if ($filters['filtro_busqueda'] !== '') {
+            $query = $this->applySearchFilter($query, $filters['filtro_campo'], $filters['filtro_busqueda']);
         }
 
-        // Ordenar por Fecha_Fin para mostrar los más urgentes primero
+        // Ordenar por urgencia
         $query->orderBy('Fecha_Fin', 'asc');
 
-        // Paginar clientes
-        $clientes = $query->paginate($perPage)
-            ->appends([
-                'per_page' => $perPage,
-                'filtro_campo' => $filtroCampo,
-                'filtro_busqueda' => $filtroBusqueda,
-                'filtro_dias' => $filtroDias,
-                'deudores' => $deudores
-            ]);
+        return $query;
+    }
 
-        return view('gestor.index', compact('clientes', 'perPage', 'filtroCampo', 'filtroBusqueda', 'filtroDias', 'deudores'));
+    /**
+     * Aplica filtro de deudores (vencimiento > 5 días)
+     */
+    private function applyDebtorFilter($query)
+    {
+        $dateLimit = now()->subDays(5)->toDateString();
+        return $query->where('Fecha_Fin', '<', $dateLimit);
+    }
+
+    /**
+     * Aplica filtro de días restantes
+     */
+    private function applyDaysFilter($query, int $daysFromNow)
+    {
+        $today = now()->toDateString();
+        $dateLimit = now()->addDays($daysFromNow)->toDateString();
+        return $query->whereBetween('Fecha_Fin', [$today, $dateLimit]);
+    }
+
+    /**
+     * Aplica filtro de búsqueda con FULLTEXT o LIKE
+     */
+    private function applySearchFilter($query, string $field, string $searchTerm)
+    {
+        $searchTerm = trim($searchTerm);
+        $fieldMap = [
+            'id' => 'id_cliente',
+            'nombre' => 'nombre',
+            'correo' => 'Correo_Electronico',
+        ];
+
+        $dbField = $fieldMap[$field] ?? 'id_cliente';
+
+        // Usar FULLTEXT para búsquedas largas (> 2 caracteres), LIKE para cortas
+        if (strlen($searchTerm) > 2) {
+            return $query->whereRaw("MATCH($dbField) AGAINST(? IN BOOLEAN MODE)", [$searchTerm . '*']);
+        }
+
+        return $query->where($dbField, 'like', '%' . $searchTerm . '%');
     }
 
     // Crear nueva gestión
