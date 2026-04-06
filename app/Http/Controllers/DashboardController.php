@@ -10,6 +10,19 @@ use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
 {
+    /**
+     * Valida que los datos críticos no sean nulos o vacíos
+     * @throws \Exception si algún dato crítico está vacío
+     */
+    private function validateNotEmpty($data, array $requiredFields): void
+    {
+        foreach ($requiredFields as $field) {
+            if (!isset($data[$field]) || empty($data[$field])) {
+                throw new \Exception("El campo '{$field}' no puede estar vacío.");
+            }
+        }
+    }
+
     public function index()
     {
         $hoyInicio = Carbon::today();
@@ -71,6 +84,7 @@ class DashboardController extends Controller
                 'nombre' => $nombresMeses[$m],
                 'total' => $total,
             ];
+
         }
 
         // Ganancias totales ahora derivadas de la suma de meses (consistente con la tabla)
@@ -90,7 +104,13 @@ class DashboardController extends Controller
     // Endpoint AJAX que devuelve los datos del dashboard para una gestión específica (o la activa si no se proporciona)
     public function data(Request $request, $gestionId = null)
     {
-        $hoyInicio = Carbon::today();
+        try {
+            // Validar que gestionId no esté vacío si se proporciona
+            if ($gestionId !== null) {
+                $this->validateNotEmpty(['gestionId' => $gestionId], ['gestionId']);
+            }
+
+            $hoyInicio = Carbon::today();
         $hoyFin = Carbon::tomorrow();
 
         // Obtener gestión: por id si se envía, sino la activa
@@ -163,5 +183,8 @@ class DashboardController extends Controller
             'gananciasPorMes' => $gananciasPorMes,
             'gestion' => $gestion ? ['id' => $gestion->id, 'nombre' => $gestion->nombre] : null
         ]);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 400);
+        }
     }
 }
