@@ -9,28 +9,33 @@ use Illuminate\Support\Facades\DB;
 
 class ClienteController extends Controller
 {
-    // Meses disponibles (constante para evitar repetición)
-    private const MESES = [
+    // Meses disponibles para datos de facturación
+    private const MONTHS = [
         'ENERO', 'FEBRERO', 'MARZO', 'ABRIL', 'MAYO', 'JUNIO',
         'JULIO', 'AGOSTO', 'SEPTIEMBRE', 'OCTUBRE', 'NOVIEMBRE', 'DICIEMBRE'
     ];
 
-    // Reglas de validación base
-    private function getValidationRules($isUpdate = false)
+    // Reglas de validación base para cliente
+    private const BASE_VALIDATION_RULES = [
+        'gestion_id' => 'nullable|exists:gestiones,id',
+        'Correo_Electronico' => 'nullable|email|max:255',
+        'Password' => 'nullable|string|min:6|max:255',
+        'nombre' => 'nullable|string|max:255',
+        'celular' => 'nullable|string|max:50',
+        'Fecha_Inicio' => 'nullable|date',
+        'Fecha_Fin' => 'nullable|date|after_or_equal:Fecha_Inicio',
+        'Concepto' => 'nullable|string|max:500',
+        'SaldoPagar' => 'nullable|numeric|min:0',
+        'AbonoDeuda' => 'nullable|numeric|min:0',
+        'TotalPagar' => 'nullable|numeric|min:0',
+    ];
+
+    /**
+     * Obtiene las reglas de validación según si es creación o actualización
+     */
+    private function getValidationRules(bool $isUpdate = false): array
     {
-        $rules = [
-            'gestion_id' => 'nullable|exists:gestiones,id',
-            'Correo_Electronico' => 'nullable|email|max:255',
-            'Password' => 'nullable|string|min:6|max:255',
-            'nombre' => 'nullable|string|max:255',
-            'celular' => 'nullable|string|max:50',
-            'Fecha_Inicio' => 'nullable|date',
-            'Fecha_Fin' => 'nullable|date|after_or_equal:Fecha_Inicio',
-            'Concepto' => 'nullable|string|max:500',
-            'SaldoPagar' => 'nullable|numeric|min:0',
-            'AbonoDeuda' => 'nullable|numeric|min:0',
-            'TotalPagar' => 'nullable|numeric|min:0',
-        ];
+        $rules = self::BASE_VALIDATION_RULES;
 
         if (!$isUpdate) {
             $rules['id_cliente'] = 'required|string|unique:clientes,id_cliente';
@@ -39,13 +44,29 @@ class ClienteController extends Controller
         return $rules;
     }
 
-    // Asignar datos de meses al cliente
-    private function asignarMeses(Cliente $cliente, Request $request)
+    /**
+     * Asigna datos mensuales (importe y concepto por mes) al cliente
+     */
+    private function assignMonthlyData(Cliente $cliente, Request $request): void
     {
-        foreach (self::MESES as $mes) {
-            $cliente->$mes = $request->$mes;
-            $cliente->{$mes . '_CONCEPTO'} = $request->{$mes . '_CONCEPTO'};
+        foreach (self::MONTHS as $month) {
+            $cliente->{$month} = $request->input($month);
+            $cliente->{$month . '_CONCEPTO'} = $request->input($month . '_CONCEPTO');
         }
+    }
+
+    /**
+     * Obtiene la gestión activa o la especificada en la request
+     */
+    private function getActiveGestion(?int $gestionId = null): ?Gestion
+    {
+        if ($gestionId) {
+            return Gestion::find($gestionId);
+        }
+
+        return cache()->remember('gestion_activa', 60, function () {
+            return Gestion::activa();
+        });
     }
 
     // Obtener todos los clientes en formato JSON (filtrado por gestión)
@@ -53,15 +74,10 @@ class ClienteController extends Controller
     {
         if ($request->wantsJson()) {
             $gestionId = $request->query('gestion_id');
+            $gestion = $this->getActiveGestion($gestionId);
 
-            if ($gestionId) {
-                return Cliente::where('gestion_id', $gestionId)->get();
-            }
-
-            // Si no se especifica gestión, usar la activa
-            $gestionActiva = Gestion::activa();
-            if ($gestionActiva) {
-                return Cliente::where('gestion_id', $gestionActiva->id)->get();
+            if ($gestion) {
+                return Cliente::where('gestion_id', $gestion->id)->get();
             }
 
             return Cliente::all();
@@ -76,22 +92,22 @@ class ClienteController extends Controller
             $validated = $request->validate($this->getValidationRules());
 
             // Asignar gestión activa si no se especifica
-            if (!isset($validated['gestion_id']) || !$validated['gestion_id']) {
-                $gestionActiva = Gestion::activa();
-                $validated['gestion_id'] = $gestionActiva ? $gestionActiva->id : null;
+            if (empty($validated['gestion_id'])) {
+                $gestion = $this->getActiveGestion();
+                $validated['gestion_id'] = $gestion?->id;
             }
 
-            \DB::beginTransaction();
+            DB::beginTransaction();
 
             $cliente = new Cliente($validated);
-            $this->asignarMeses($cliente, $request);
+            $this->assignMonthlyData($cliente, $request);
             $cliente->save();
 
-            \DB::commit();
+            DB::commit();
 
             return response()->json($cliente, 201);
         } catch (\Exception $e) {
-            \DB::rollBack();
+            DB::rollBack();
             return response()->json(['error' => 'Error al guardar cliente: ' . $e->getMessage()], 500);
         }
     }
@@ -109,17 +125,17 @@ class ClienteController extends Controller
             $cliente = Cliente::findOrFail($id);
             $validated = $request->validate($this->getValidationRules(true));
 
-            \DB::beginTransaction();
+            DB::beginTransaction();
 
             $cliente->fill($validated);
-            $this->asignarMeses($cliente, $request);
+            $this->assignMonthlyData($cliente, $request);
             $cliente->save();
 
-            \DB::commit();
+            DB::commit();
 
             return response()->json($cliente);
         } catch (\Exception $e) {
-            \DB::rollBack();
+            DB::rollBack();
             return response()->json(['error' => 'Error al actualizar cliente: ' . $e->getMessage()], 500);
         }
     }
@@ -128,16 +144,16 @@ class ClienteController extends Controller
     public function destroy($id)
     {
         try {
-            \DB::beginTransaction();
+            DB::beginTransaction();
 
             $cliente = Cliente::findOrFail($id);
             $cliente->delete();
 
-            \DB::commit();
+            DB::commit();
 
             return response()->json(['success' => true]);
         } catch (\Exception $e) {
-            \DB::rollBack();
+            DB::rollBack();
             return response()->json(['error' => 'Error al eliminar cliente'], 500);
         }
     }
